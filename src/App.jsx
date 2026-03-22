@@ -15,7 +15,7 @@ export default function App() {
     probDefault: 0, medianBalance: 0, worstCase: 0,
     chartData: { days: [], median: [], worst: [], best: [] }
   });
-
+ 
   useEffect(() => {
     const runSimulation = async () => {
       setLoading(true);
