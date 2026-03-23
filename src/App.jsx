@@ -4,6 +4,31 @@ import ReactECharts from 'echarts-for-react';
 
 const { Title, Text } = Typography;
 
+// 🌟 第一步：把判断函数放在组件的最外面（这里使用了 Ant Design 的标准色系）
+const getFeedbackMessage = (probability) => {
+  if (probability <= 5) {
+    return {
+      type: 'success', color: '#52c41a', // 绿色
+      text: '🎉 Your financial outlook is solid! Your current budget can comfortably handle most unexpected expenses. Keep up the good work.'
+    };
+  } else if (probability > 5 && probability <= 15) {
+    return {
+      type: 'warning', color: '#faad14', // 橙黄色
+      text: '👀 There is a slight risk of a cash shortfall. Keep an eye on non-essential spending and try to build a small emergency buffer.'
+    };
+  } else if (probability > 15 && probability <= 30) {
+    return {
+      type: 'danger', color: '#ff4d4f', // 红色
+      text: '⚠️ Warning: Your spending pattern carries a high risk! An unexpected bill could lead to an overdraft. We strongly recommend reviewing your budget.'
+    };
+  } else {
+    return {
+      type: 'critical', color: '#cf1322', // 深红色
+      text: '🚨 Critical Alert: High probability of fund depletion! Immediate action is needed: look for ways to boost your income or significantly reduce fixed costs.'
+    };
+  }
+};
+
 export default function App() {
   const [initialBalance, setInitialBalance] = useState(1200);
   const [rent, setRent] = useState(550);
@@ -21,7 +46,6 @@ export default function App() {
       setLoading(true);
       try {
         const data = {
-          // 🌟 恢复成你原本绝对正确的命名！
           initialBalance: initialBalance, 
           daysToSimulate: 30,
           expenses: [
@@ -31,7 +55,6 @@ export default function App() {
           ]
         };
 
-        // 🌟 核心修复：在这里加上 /api 🌟
         const response = await fetch('https://unibudget-uhmr.onrender.com/api/simulate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -63,7 +86,6 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [initialBalance, rent, foodBudget, socialFreq]);
 
-  // 🌟 防弹衣 3：画图前加上问号 (?.)，哪怕没数据也绝不白屏
   const getOption = () => ({
     tooltip: { trigger: 'axis' },
     legend: { 
@@ -112,6 +134,9 @@ export default function App() {
     ]
   });
 
+  // 🌟 第二步：在 return 之前，调用判断函数，拿到对应的文案和颜色
+  const feedback = getFeedbackMessage(results.probDefault);
+
   return (
     <Layout style={{ minHeight: '100vh', padding: '20px', background: '#f0f2f5' }}>
       <Title level={2} style={{ textAlign: 'center', marginBottom: '30px' }}>
@@ -159,6 +184,25 @@ export default function App() {
               <Col span={8}><Card><Statistic title="Median End Balance" value={results.medianBalance} prefix="£" /></Card></Col>
               <Col span={8}><Card><Statistic title="Worst Case" value={results.worstCase} prefix="£" /></Card></Col>
             </Row>
+
+            {/* 🌟 第三步：UI 渲染。我把它放在了那三个数据卡片的正下方，图表的正上方 */}
+            <div style={{
+              marginTop: '16px',
+              padding: '16px',
+              backgroundColor: '#ffffff',
+              borderRadius: '8px',
+              borderLeft: `5px solid ${feedback.color}`,
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+            }}>
+              <div style={{ color: feedback.color, fontSize: '15px', fontWeight: '500' }}>
+                {feedback.text}
+              </div>
+              {/* 结合你们文档里提到的 Ethical Considerations，加上免责声明 */}
+              <div style={{ marginTop: '8px', fontSize: '12px', color: '#8c8c8c' }}>
+                * Results are probabilistic projections, not professional financial advice.
+              </div>
+            </div>
+
             <Card title="📊 30-Day Cash Flow Projection" style={{ marginTop: '16px' }}>
               <ReactECharts option={getOption()} style={{ height: '350px' }} />
             </Card>
