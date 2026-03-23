@@ -11,12 +11,12 @@ const getFeedbackMessage = (probability) => {
       type: 'success', color: '#52c41a', // 绿色
       text: '🎉 Your financial outlook is solid! Your current budget can comfortably handle most unexpected expenses. Keep up the good work.'
     };
-  } else if (probability > 5 && probability <= 15) {
+  } else if (probability > 5 && probability <= 25) {
     return {
       type: 'warning', color: '#faad14', // 橙黄色
       text: '👀 There is a slight risk of a cash shortfall. Keep an eye on non-essential spending and try to build a small emergency buffer.'
     };
-  } else if (probability > 15 && probability <= 30) {
+  } else if (probability > 25 && probability <= 50) {
     return {
       type: 'danger', color: '#ff4d4f', // 红色
       text: '⚠️ Warning: Your spending pattern carries a high risk! An unexpected bill could lead to an overdraft. We strongly recommend reviewing your budget.'
