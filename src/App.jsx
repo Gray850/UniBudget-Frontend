@@ -48,10 +48,12 @@ export default function App() {
         const data = {
           initialBalance: initialBalance, 
           daysToSimulate: 30,
-          expenses: [
+         expenses: [
             { id: 'rent', name: 'Rent', type: 'fixed', amount: rent, frequency: 'monthly', dayOfCharge: 1 },
-            { id: 'food', name: 'Food', type: 'variable', min: Math.max(0, foodBudget - 5), max: foodBudget + 5, frequency: 'daily' },
-            { id: 'social', name: 'Social', type: 'sporadic', min: 30, max: 80, probabilityPerDay: socialFreq / 7 }
+            // 🌟 核心修改 1：让吃饭的开销变得极度不可控！(上下浮动 50% 甚至更多)
+            { id: 'food', name: 'Food', type: 'variable', min: Math.max(0, foodBudget * 0.4), max: foodBudget * 1.8, frequency: 'daily' },
+            // 🌟 核心修改 2：社交可能不花钱(蹭饭)，也可能去高档酒吧花大钱！
+            { id: 'social', name: 'Social', type: 'sporadic', min: 0, max: 200, probabilityPerDay: socialFreq / 7 }
           ]
         };
 
