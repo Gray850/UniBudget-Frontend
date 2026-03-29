@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-// 🌟 删除了 Table 相关的导入
+// 🌟 引入了所需的 Ant Design 组件和图标
 import { Layout, Typography, Row, Col, Card, Slider, Button, Space, Statistic, Spin, InputNumber, Divider, Progress, ConfigProvider, theme, Switch, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
+// 🌟 引入 ECharts 用于图表渲染
 import ReactECharts from 'echarts-for-react';
 
 const { Title, Text } = Typography;
 
+// 反馈文案逻辑
 const getFeedbackMessage = (probability) => {
   if (probability <= 10) {
     return {
@@ -34,7 +36,7 @@ export default function App() {
   const [initialBalance, setInitialBalance] = useState(1500);
   const [rent, setRent] = useState(550);
   const [foodBudget, setFoodBudget] = useState(20);
-  const [socialFreq, setSocialFreq] = useState(0);
+  const [socialFreq, setSocialFreq] = useState(1); // 默认一周一次社交
   
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState({
@@ -44,12 +46,13 @@ export default function App() {
 
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // 🌟 这里已经帮你把 mockTransactions 和 columns 删得干干净净了！
-
+  // 核心模拟副作用
   useEffect(() => {
     const runSimulation = async () => {
       setLoading(true);
       try {
+        // 🌟 核心修改 1：让吃饭的开销变得极度不可控！(上下浮动 40% 到 180%)
+        // 🌟 核心修改 2：社交可能不花钱(蹭饭)，也可能去高档酒吧花大钱！(0 到 200 镑)
         const data = {
           initialBalance: initialBalance, 
           daysToSimulate: 30,
@@ -87,11 +90,13 @@ export default function App() {
       }
     };
 
+    // 🌟 200ms 极致防抖
     const timer = setTimeout(runSimulation, 200);
     return () => clearTimeout(timer);
   }, [initialBalance, rent, foodBudget, socialFreq]);
 
-  const getOption = () => ({
+  // 折线图配置
+  const getLineOption = () => ({
     tooltip: { trigger: 'axis' },
     legend: { 
       data: ['Optimistic (Top 10%)', 'Median Forecast', 'Pessimistic (Bottom 10%)'], 
@@ -126,6 +131,58 @@ export default function App() {
     ]
   });
 
+  // 🌟 新增：饼图（环形图）配置函数
+  const getPieOption = () => {
+    // 简单的估算每月支出：房租 + (日均伙食*30) + (周均社交*4周*假设每次40镑)
+    const monthlyFood = foodBudget * 30;
+    const monthlySocial = socialFreq * 4 * 40; // 假设每次社交平均花40镑作为估算
+    
+    return {
+      tooltip: {
+        trigger: 'item',
+        formatter: '£{c} ({d}%)' // 显示金额和百分比
+      },
+      legend: {
+        orient: 'vertical',
+        left: 'left',
+        textStyle: { color: isDarkMode ? 'rgba(255, 255, 255, 0.85)' : '#333' }
+      },
+      series: [
+        {
+          name: 'Expense Breakdown',
+          type: 'pie',
+          radius: ['40%', '70%'], // 🌟 设置内径和外径，变成环形图
+          avoidLabelOverlap: false,
+          itemStyle: {
+            borderRadius: 10,
+            borderColor: isDarkMode ? '#141414' : '#fff',
+            borderWidth: 2
+          },
+          label: {
+            show: false,
+            position: 'center'
+          },
+          emphasis: {
+            label: {
+              show: true,
+              fontSize: 16,
+              fontWeight: 'bold',
+              color: isDarkMode ? '#fff' : '#333'
+            }
+          },
+          labelLine: {
+            show: false
+          },
+          data: [
+            { value: rent, name: '🏠 Rent (Fixed)' },
+            { value: monthlyFood, name: '🍔 Food (Variable)' },
+            { value: monthlySocial, name: '🎉 Social (Sporadic)' }
+          ]
+        }
+      ]
+    };
+  };
+
   const feedback = getFeedbackMessage(results.probDefault);
   const healthScore = Math.max(0, 100 - Math.round(results.probDefault));
   const scoreColor = healthScore >= 80 ? '#52c41a' : healthScore >= 50 ? '#faad14' : '#ff4d4f';
@@ -148,6 +205,7 @@ export default function App() {
         </div>
 
         <Row gutter={24}>
+          {/* 左侧输入区 */}
           <Col span={8}>
             <Card title="🎛️ Financial & Lifestyle Inputs" bordered={false}>
               <Space direction="vertical" style={{ width: '100%' }} size="middle">
@@ -181,37 +239,43 @@ export default function App() {
             </Card>
           </Col>
 
+          {/* 右侧可视化区 */}
           <Col span={16}>
             <Spin spinning={loading} tip="Calculating 1,000 possibilities...">
-              <Card style={{ marginBottom: '16px', textAlign: 'center', background: isDarkMode ? '#1f1f1f' : '#fafafa' }}>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '40px' }}>
-                  <div>
-                    <Title level={4} style={{ margin: 0, color: isDarkMode ? 'rgba(255,255,255,0.85)' : '#595959' }}>Financial Health Score</Title>
-                    <Text type="secondary">Based on stochastic risk analysis</Text>
-                  </div>
-                  <Progress 
-                    type="dashboard" 
-                    percent={healthScore} 
-                    strokeColor={scoreColor}
-                    format={percent => `${percent} pts`}
-                    size={120}
-                  />
-                </div>
-              </Card>
+              
+              {/* 🌟 新增：支出结构饼图卡片 (放在健康分和数据卡片之间) */}
+              <Row gutter={16}>
+                <Col span={12}>
+                   <Card style={{ marginBottom: '16px', textAlign: 'center', background: isDarkMode ? '#1f1f1f' : '#fafafa', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
+                      <div>
+                        <Title level={4} style={{ margin: 0, color: isDarkMode ? 'rgba(255,255,255,0.85)' : '#595959' }}>Financial Health</Title>
+                        <Text type="secondary">Score /100</Text>
+                      </div>
+                      <Progress 
+                        type="dashboard" 
+                        percent={healthScore} 
+                        strokeColor={scoreColor}
+                        format={percent => `${percent}`}
+                        size={120}
+                        gapDegree={60}
+                      />
+                    </div>
+                  </Card>
+                </Col>
+                <Col span={12}>
+                  <Card title="📊 Est. Monthly Breakdown" style={{ marginBottom: '16px', height: '300px' }} bodyStyle={{ padding: '10px' }}>
+                    <ReactECharts option={getPieOption()} style={{ height: '100%' }} theme={isDarkMode ? 'dark' : 'light'} />
+                  </Card>
+                </Col>
+              </Row>
 
-              {/* 🌟 带有 Tooltips 金融科普的小卡片 */}
+              {/* 三个带有 Tooltips 金融科普的小卡片 */}
               <Row gutter={16}>
                 <Col span={8}>
                   <Card>
                     <Statistic 
-                      title={
-                        <span>
-                          Prob. of Default{' '}
-                          <Tooltip title="The likelihood that your balance will drop below £0 within 30 days, based on 1,000 Monte Carlo simulations.">
-                            <InfoCircleOutlined style={{ color: '#8c8c8c', cursor: 'help' }} />
-                          </Tooltip>
-                        </span>
-                      } 
+                      title={<span>Prob. of Default <Tooltip title="The likelihood that your balance will drop below £0 within 30 days, based on 1,000 Monte Carlo simulations."><InfoCircleOutlined style={{ color: '#8c8c8c', cursor: 'help' }} /></Tooltip></span>} 
                       value={results.probDefault} 
                       suffix="%" 
                       valueStyle={{ color: results.probDefault > 20 ? '#cf1322' : '#3f8600' }} 
@@ -221,57 +285,34 @@ export default function App() {
                 <Col span={8}>
                   <Card>
                     <Statistic 
-                      title={
-                        <span>
-                          Median End Balance{' '}
-                          <Tooltip title="The most likely remaining balance after 30 days. 50% of the simulated scenarios ended up better than this, and 50% were worse.">
-                            <InfoCircleOutlined style={{ color: '#8c8c8c', cursor: 'help' }} />
-                          </Tooltip>
-                        </span>
-                      } 
-                      value={results.medianBalance} 
-                      prefix="£" 
+                      title={<span>Median End Balance <Tooltip title="The most likely remaining balance after 30 days. 50% of the simulated scenarios ended up better than this, and 50% were worse."><InfoCircleOutlined style={{ color: '#8c8c8c', cursor: 'help' }} /></Tooltip></span>} 
+                      value={results.medianBalance} prefix="£" 
                     />
                   </Card>
                 </Col>
                 <Col span={8}>
                   <Card>
                     <Statistic 
-                      title={
-                        <span>
-                          Worst Case{' '}
-                          <Tooltip title="An extreme pessimistic scenario (Bottom 10%). If you have terrible luck with your daily variable expenses, this is where you might end up.">
-                            <InfoCircleOutlined style={{ color: '#8c8c8c', cursor: 'help' }} />
-                          </Tooltip>
-                        </span>
-                      } 
-                      value={results.worstCase} 
-                      prefix="£" 
+                      title={<span>Worst Case <Tooltip title="An extreme pessimistic scenario (Bottom 10%). If you have terrible luck with your daily variable expenses, this is where you might end up."><InfoCircleOutlined style={{ color: '#8c8c8c', cursor: 'help' }} /></Tooltip></span>} 
+                      value={results.worstCase} prefix="£" 
                     />
                   </Card>
                 </Col>
               </Row>
 
+              {/* 反馈信息框 */}
               <div style={{
-                marginTop: '16px',
-                padding: '16px',
-                backgroundColor: isDarkMode ? '#1f1f1f' : '#ffffff',
-                borderRadius: '8px',
-                borderLeft: `5px solid ${feedback.color}`,
-                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                marginTop: '16px', padding: '16px', backgroundColor: isDarkMode ? '#1f1f1f' : '#ffffff',
+                borderRadius: '8px', borderLeft: `5px solid ${feedback.color}`, boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
               }}>
-                <div style={{ color: feedback.color, fontSize: '15px', fontWeight: '500' }}>
-                  {feedback.text}
-                </div>
-                <div style={{ marginTop: '8px', fontSize: '12px', color: '#8c8c8c' }}>
-                  * Results are probabilistic projections, not professional financial advice.
-                </div>
+                <div style={{ color: feedback.color, fontSize: '15px', fontWeight: '500' }}>{feedback.text}</div>
+                <div style={{ marginTop: '8px', fontSize: '12px', color: '#8c8c8c' }}>* Results are probabilistic projections, not professional financial advice.</div>
               </div>
 
-              <Card title="📊 30-Day Cash Flow Projection" style={{ marginTop: '16px' }}>
-                <ReactECharts option={getOption()} style={{ height: '350px' }} theme={isDarkMode ? 'dark' : 'light'} />
+              {/* 30天预测折线图 */}
+              <Card title="📈 30-Day Monte Carlo Projection" style={{ marginTop: '16px' }}>
+                <ReactECharts option={getLineOption()} style={{ height: '350px' }} theme={isDarkMode ? 'dark' : 'light'} />
               </Card>
-
             </Spin>
           </Col>
         </Row>
