@@ -16,6 +16,14 @@ const getFeedbackMessage = (probability) => {
     return { type: 'critical', color: '#cf1322', text: '🚨 Critical Alert: High probability of fund depletion! Immediate action is needed: look for ways to boost your income or significantly reduce fixed costs.' };
   }
 };
+const getActionableAdvice = (food, social, prob) => {
+  let advice = [];
+  if (food > 40) advice.push(" Your daily food budget is above average. Consider meal prep to save around £100/month.");
+  if (social > 3) advice.push(" High social frequency detected. Reducing one event per week could significantly stabilize your cash flow.");
+  if (prob > 20) advice.push(" Warning: Your current lifestyle has a high 'Default Risk'. We suggest increasing your initial balance or cutting variable costs.");
+  if (advice.length === 0) advice.push(" Your current budget looks very sustainable. Keep maintaining this balance!");
+  return advice;
+};
 
 export default function App() {
   const [initialBalance, setInitialBalance] = useState(1500);
@@ -134,6 +142,15 @@ export default function App() {
                 <Space direction="vertical" style={{ width: '100%' }}>
                   <Button type="primary" danger block onClick={() => { setFoodBudget(60); setSocialFreq(5); }}>Scenario: High Consumption</Button>
                   <Button block onClick={() => { setFoodBudget(15); setSocialFreq(1); }}>Scenario: Frugal Lifestyle</Button>
+                  <Divider style={{ margin: '12px 0' }} />
+                <div style={{ padding: '12px', background: isDarkMode ? '#1f1f1f' : '#fafafa', borderRadius: '8px', border: '1px dashed #d9d9d9' }}>
+                  <Text strong><InfoCircleOutlined /> Smart Advice:</Text>
+                  <ul style={{ paddingLeft: '20px', marginTop: '8px', fontSize: '12px', color: isDarkMode ? '#aaa' : '#555' }}>
+                    {getActionableAdvice(foodBudget, socialFreq, results.probDefault).map((item, index) => (
+                      <li key={index} style={{ marginBottom: '4px' }}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
                 </Space>
               </Space>
             </Card>
