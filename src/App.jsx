@@ -40,8 +40,8 @@ export default function App() {
           daysToSimulate: 30,
           expenses: [
             { id: 'rent', name: 'Rent', type: 'fixed', amount: rent, frequency: 'monthly', dayOfCharge: 1 },
-            { id: 'food', name: 'Food', type: 'variable', min: Math.max(0, foodBudget * 0.4), max: foodBudget * 1.8, frequency: 'daily' },
-            { id: 'social', name: 'Social', type: 'sporadic', min: 0, max: 200, probabilityPerDay: socialFreq / 7 }
+            { id: 'food', name: 'Food', type: 'variable', min: Math.max(0, foodBudget * 0.5), max: foodBudget * 1.5, frequency: 'daily' },
+            { id: 'social', name: 'Social', type: 'sporadic', min: 0, max: 80, probabilityPerDay: socialFreq / 7 }
           ]
         };
 
@@ -100,7 +100,7 @@ export default function App() {
           label: { show: false, position: 'center' },
           emphasis: { label: { show: true, fontSize: 16, fontWeight: 'bold', color: isDarkMode ? '#fff' : '#333' } },
           labelLine: { show: false },
-          data: [ { value: rent, name: '🏠 Rent' }, { value: monthlyFood, name: '🍔 Food' }, { value: monthlySocial, name: '🎉 Social' } ]
+          data: [ { value: rent, name: ' Rent' }, { value: monthlyFood, name: ' Food' }, { value: monthlySocial, name: ' Social' } ]
         }
       ]
     };
