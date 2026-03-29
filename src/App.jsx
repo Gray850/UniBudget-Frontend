@@ -6,10 +6,10 @@ import ReactECharts from 'echarts-for-react';
 const { Title, Text } = Typography;
 
 const getFeedbackMessage = (probability) => {
-  if (probability <= 10) return { type: 'success', color: '#52c41a', text: '🎉 Your financial outlook is solid! Your budget can comfortably handle unexpected expenses.' };
-  if (probability <= 25) return { type: 'warning', color: '#faad14', text: '👀 Slight risk of a cash shortfall. Keep an eye on non-essential spending.' };
-  if (probability <= 50) return { type: 'danger', color: '#ff4d4f', text: '⚠️ Warning: High risk! An unexpected bill could lead to an overdraft.' };
-  return { type: 'critical', color: '#cf1322', text: '🚨 Critical Alert: High probability of fund depletion! Consider taking on more part-time hours or cutting expenses.' };
+  if (probability <= 10) return { type: 'success', color: '#52c41a', text: ' Your financial outlook is solid! Your budget can comfortably handle unexpected expenses.' };
+  if (probability <= 25) return { type: 'warning', color: '#faad14', text: ' Slight risk of a cash shortfall. Keep an eye on non-essential spending.' };
+  if (probability <= 50) return { type: 'danger', color: '#ff4d4f', text: ' Warning: High risk! An unexpected bill could lead to an overdraft.' };
+  return { type: 'critical', color: '#cf1322', text: ' Critical Alert: High probability of fund depletion! Consider taking on more part-time hours or cutting expenses.' };
 };
 
 export default function App() {
@@ -78,7 +78,7 @@ export default function App() {
       name: 'Expense', type: 'pie', radius: ['45%', '75%'], center: ['50%', '45%'], avoidLabelOverlap: false,
       itemStyle: { borderRadius: 8, borderColor: isDarkMode ? '#141414' : '#fff', borderWidth: 2 },
       label: { show: false },
-      data: [ { value: rent, name: '🏠 Rent' }, { value: foodBudget * 30, name: '🍔 Food' }, { value: socialFreq * 4 * 20, name: '🎉 Social' } ]
+      data: [ { value: rent, name: ' Rent' }, { value: foodBudget * 30, name: ' Food' }, { value: socialFreq * 4 * 20, name: ' Social' } ]
     }]
   });
 
