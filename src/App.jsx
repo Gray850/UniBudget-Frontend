@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 // 🌟 引入了 ConfigProvider, theme 和 Switch 用于暗黑模式
-import { Layout, Typography, Row, Col, Card, Slider, Button, Space, Statistic, Spin, InputNumber, Divider, Progress, Table, ConfigProvider, theme, Switch } from 'antd';
+import { Layout, Typography, Row, Col, Card, Slider, Button, Space, Statistic, Spin, InputNumber, Divider, Progress, Table, ConfigProvider, theme, Switch , Tooltip} from 'antd';
 import ReactECharts from 'echarts-for-react';
-
+import { InfoCircleOutlined } from '@ant-design/icons';
 const { Title, Text } = Typography;
 
 // 🌟 第一步：把判断函数放在组件的最外面
@@ -101,7 +101,7 @@ export default function App() {
       }
     };
 
-    const timer = setTimeout(runSimulation, 500);
+    const timer = setTimeout(runSimulation, 200);
     return () => clearTimeout(timer);
   }, [initialBalance, rent, foodBudget, socialFreq]);
 
@@ -217,9 +217,55 @@ export default function App() {
               </Card>
 
               <Row gutter={16}>
-                <Col span={8}><Card><Statistic title="Prob. of Default" value={results.probDefault} suffix="%" valueStyle={{ color: results.probDefault > 20 ? '#cf1322' : '#3f8600' }} /></Card></Col>
-                <Col span={8}><Card><Statistic title="Median End Balance" value={results.medianBalance} prefix="£" /></Card></Col>
-                <Col span={8}><Card><Statistic title="Worst Case" value={results.worstCase} prefix="£" /></Card></Col>
+                <Col span={8}>
+                  <Card>
+                    <Statistic 
+                      title={
+                        <span>
+                          Prob. of Default{' '}
+                          <Tooltip title="The likelihood that your balance will drop below £0 within 30 days, based on 1,000 Monte Carlo simulations.">
+                            <InfoCircleOutlined style={{ color: '#8c8c8c', cursor: 'help' }} />
+                          </Tooltip>
+                        </span>
+                      } 
+                      value={results.probDefault} 
+                      suffix="%" 
+                      valueStyle={{ color: results.probDefault > 20 ? '#cf1322' : '#3f8600' }} 
+                    />
+                  </Card>
+                </Col>
+                <Col span={8}>
+                  <Card>
+                    <Statistic 
+                      title={
+                        <span>
+                          Median End Balance{' '}
+                          <Tooltip title="The most likely remaining balance after 30 days. 50% of the simulated scenarios ended up better than this, and 50% were worse.">
+                            <InfoCircleOutlined style={{ color: '#8c8c8c', cursor: 'help' }} />
+                          </Tooltip>
+                        </span>
+                      } 
+                      value={results.medianBalance} 
+                      prefix="£" 
+                    />
+                  </Card>
+                </Col>
+                <Col span={8}>
+                  <Card>
+                    <Statistic 
+                      title={
+                        <span>
+                          Worst Case{' '}
+                          <Tooltip title="An extreme pessimistic scenario (Bottom 10%). If you have terrible luck with your daily variable expenses, this is where you might end up.">
+                            <InfoCircleOutlined style={{ color: '#8c8c8c', cursor: 'help' }} />
+                          </Tooltip>
+                        </span>
+                      } 
+                      value={results.worstCase} 
+                      prefix="£" 
+                    />
+                  </Card>
+                </Col>
               </Row>
 
               {/* 🌟 动态适配暗色模式的反馈框背景 */}
