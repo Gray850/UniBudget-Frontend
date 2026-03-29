@@ -1,39 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Typography, Row, Col, Card, Slider, Button, Space, Statistic, Spin, InputNumber, Divider, Progress, ConfigProvider, theme, Switch, Tooltip } from 'antd';
-import { InfoCircleOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined, DollarCircleOutlined } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 
 const { Title, Text } = Typography;
 
-// 🌟 动态反馈文案引擎
 const getFeedbackMessage = (probability) => {
   if (probability <= 10) return { type: 'success', color: '#52c41a', text: '🎉 Your financial outlook is solid! Your budget can comfortably handle unexpected expenses.' };
   if (probability <= 25) return { type: 'warning', color: '#faad14', text: '👀 Slight risk of a cash shortfall. Keep an eye on non-essential spending.' };
   if (probability <= 50) return { type: 'danger', color: '#ff4d4f', text: '⚠️ Warning: High risk! An unexpected bill could lead to an overdraft.' };
-  return { type: 'critical', color: '#cf1322', text: '🚨 Critical Alert: High probability of fund depletion! Immediate action needed.' };
+  return { type: 'critical', color: '#cf1322', text: '🚨 Critical Alert: High probability of fund depletion! Consider taking on more part-time hours or cutting expenses.' };
 };
 
 export default function App() {
-  // 🌟 核心状态管理
-  const [initialBalance, setInitialBalance] = useState(1500);
-  const [rent, setRent] = useState(550);
-  const [foodBudget, setFoodBudget] = useState(20);
-  const [socialFreq, setSocialFreq] = useState(1);
+  const [initialBalance, setInitialBalance] = useState(1200);
+  const [rent, setRent] = useState(600);
+  const [foodBudget, setFoodBudget] = useState(25);
+  const [socialFreq, setSocialFreq] = useState(2);
+  
+  // 🌟 新增：打工人兼职状态 (每周打工多少小时)
+  const [partTimeHours, setPartTimeHours] = useState(0); 
+  
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState({ probDefault: 0, medianBalance: 0, worstCase: 0, chartData: { days: [], median: [], worst: [], best: [] } });
 
-  // 🌟 蒙特卡洛预测引擎 (带 200ms 防抖)
+  // 🌟 核心财务逻辑计算
+  const hourlyWage = 12; // 假设时薪 £12
+  const monthlyWages = partTimeHours * hourlyWage * 4; // 每月兼职总收入
+  const monthlyOut = rent + (foodBudget * 30) + (socialFreq * 4 * 20); // 每月总支出
+  const netFlow = initialBalance + monthlyWages - monthlyOut; // 🌟 包含兼职后的真实净现金流
+
   useEffect(() => {
     const runSimulation = async () => {
       setLoading(true);
       try {
         const data = {
-          initialBalance, daysToSimulate: 30,
+          // 🌟 把打工赚的钱无缝注入到蒙特卡洛引擎的初始资金里
+          initialBalance: initialBalance + monthlyWages, 
+          daysToSimulate: 30,
           expenses: [
             { id: 'rent', name: 'Rent', type: 'fixed', amount: rent, frequency: 'monthly', dayOfCharge: 1 },
             { id: 'food', name: 'Food', type: 'variable', min: Math.max(0, foodBudget * 0.4), max: foodBudget * 1.8, frequency: 'daily' },
-            { id: 'social', name: 'Social', type: 'sporadic', min: 0, max: 80, probabilityPerDay: socialFreq / 7 } // 社交上限控制在合理的 80 镑
+            { id: 'social', name: 'Social', type: 'sporadic', min: 0, max: 80, probabilityPerDay: socialFreq / 7 }
           ]
         };
         const response = await fetch('https://unibudget-uhmr.onrender.com/api/simulate', {
@@ -47,13 +56,8 @@ export default function App() {
     };
     const timer = setTimeout(runSimulation, 200);
     return () => clearTimeout(timer);
-  }, [initialBalance, rent, foodBudget, socialFreq]);
+  }, [initialBalance, rent, foodBudget, socialFreq, partTimeHours]); // 🌟 监听兼职时间的变化
 
-  // 🌟 录屏杀手锏：实时资产概览计算
-  const monthlyOut = rent + (foodBudget * 30) + (socialFreq * 4 * 20); // 假定平均单次社交 20 镑
-  const netFlow = initialBalance - monthlyOut;
-
-  // 🌟 折线图配置
   const getLineOption = () => ({
     tooltip: { trigger: 'axis' },
     legend: { data: ['Optimistic (Top 10%)', 'Median Forecast', 'Pessimistic (Bottom 10%)'], bottom: 0, textStyle: { color: isDarkMode ? 'rgba(255,255,255,0.85)' : '#333' } },
@@ -67,7 +71,6 @@ export default function App() {
     ]
   });
 
-  // 🌟 动态环形饼图配置
   const getPieOption = () => ({
     tooltip: { trigger: 'item', formatter: '£{c} ({d}%)' },
     legend: { orient: 'horizontal', bottom: '0%', textStyle: { color: isDarkMode ? 'rgba(255,255,255,0.85)' : '#333' } },
@@ -92,12 +95,10 @@ export default function App() {
         </div>
 
         <Row gutter={24}>
-          {/* 左侧控制台 */}
           <Col span={8}>
             <Card title="🎛️ Control Panel" bordered={false}>
               <Space direction="vertical" style={{ width: '100%' }} size="middle">
                 
-                {/* 🌟 恢复的初始资金输入框 */}
                 <div>
                   <Text strong>Starting Balance (£):</Text>
                   <InputNumber min={0} value={initialBalance} onChange={setInitialBalance} style={{ width: '100%', marginTop: '4px' }} />
@@ -112,12 +113,24 @@ export default function App() {
                 <div><Text strong>Daily Food Budget (£): {foodBudget}</Text><Slider min={5} max={100} value={foodBudget} onChange={setFoodBudget} /></div>
                 <div><Text strong>Weekly Social Events: {socialFreq}</Text><Slider min={0} max={7} value={socialFreq} onChange={setSocialFreq} /></div>
                 
-                {/* 🌟 醒目的收支净流动态面板 */}
+                {/* 🌟 新增：绿色的兼职收入滑块 */}
+                <div style={{ padding: '10px', background: isDarkMode ? '#172a1a' : '#f6ffed', borderRadius: '8px', border: '1px solid #b7eb8f' }}>
+                  <Text strong style={{ color: '#52c41a' }}><DollarCircleOutlined /> Part-time Job (hrs/week): {partTimeHours}h</Text>
+                  <Slider min={0} max={20} value={partTimeHours} onChange={setPartTimeHours} />
+                  <Text type="secondary" style={{ fontSize: '12px', color: '#52c41a' }}>* Est. £12/hr (Total: +£{monthlyWages}/mo)</Text>
+                </div>
+                
+                {/* 🌟 升级版收支净流动态面板 (包含 Wages) */}
                 <Card size="small" style={{ background: isDarkMode ? '#1f1f1f' : '#e6f7ff', border: isDarkMode ? '1px solid #434343' : '1px solid #91d5ff', marginTop: '8px' }}>
                   <Text type="secondary" style={{ fontSize: '13px', fontWeight: 'bold' }}>📊 30-Day Net Outlook</Text>
                   <div style={{ marginTop: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}><Text>Starting Balance:</Text><Text>£{initialBalance}</Text></div>
+                    {partTimeHours > 0 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', color: '#52c41a' }}><Text>+ Est. Wages:</Text><Text>+£{monthlyWages}</Text></div>
+                    )}
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}><Text>Est. Expenses:</Text><Text type="danger">-£{monthlyOut.toFixed(0)}</Text></div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
+                    <Divider style={{ margin: '8px 0' }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <Text strong>Net Cashflow:</Text>
                       <Text strong style={{ color: netFlow >= 0 ? '#52c41a' : '#ff4d4f', fontSize: '16px' }}>
                         {netFlow >= 0 ? '+' : ''}£{netFlow.toFixed(0)}
@@ -126,15 +139,10 @@ export default function App() {
                   </div>
                 </Card>
 
-                <Space direction="vertical" style={{ width: '100%', marginTop: '8px' }}>
-                  <Button type="primary" danger block onClick={() => { setFoodBudget(60); setSocialFreq(5); }}>Scenario: Stress Test</Button>
-                  <Button block onClick={() => { setFoodBudget(15); setSocialFreq(1); }}>Scenario: Frugal Lifestyle</Button>
-                </Space>
               </Space>
             </Card>
           </Col>
 
-          {/* 右侧可视化区域 */}
           <Col span={16}>
             <Spin spinning={loading} tip="Running 1,000 Monte Carlo simulations...">
               
