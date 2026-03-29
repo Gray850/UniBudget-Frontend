@@ -13,31 +13,30 @@ const getFeedbackMessage = (probability) => {
 };
 
 export default function App() {
+  // 🌟 核心状态
   const [initialBalance, setInitialBalance] = useState(1200);
   const [rent, setRent] = useState(600);
   const [foodBudget, setFoodBudget] = useState(25);
   const [socialFreq, setSocialFreq] = useState(2);
-  
-  // 🌟 新增：打工人兼职状态 (每周打工多少小时)
-  const [partTimeHours, setPartTimeHours] = useState(0); 
+  const [partTimeHours, setPartTimeHours] = useState(0); // 兼职打工时间
   
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState({ probDefault: 0, medianBalance: 0, worstCase: 0, chartData: { days: [], median: [], worst: [], best: [] } });
 
-  // 🌟 核心财务逻辑计算
+  // 🌟 财务逻辑计算
   const hourlyWage = 12; // 假设时薪 £12
-  const monthlyWages = partTimeHours * hourlyWage * 4; // 每月兼职总收入
-  const monthlyOut = rent + (foodBudget * 30) + (socialFreq * 4 * 20); // 每月总支出
-  const netFlow = initialBalance + monthlyWages - monthlyOut; // 🌟 包含兼职后的真实净现金流
+  const monthlyWages = partTimeHours * hourlyWage * 4; 
+  const monthlyOut = rent + (foodBudget * 30) + (socialFreq * 4 * 20); 
+  const netFlow = initialBalance + monthlyWages - monthlyOut; 
 
+  // 🌟 API 请求与防抖
   useEffect(() => {
     const runSimulation = async () => {
       setLoading(true);
       try {
         const data = {
-          // 🌟 把打工赚的钱无缝注入到蒙特卡洛引擎的初始资金里
-          initialBalance: initialBalance + monthlyWages, 
+          initialBalance: initialBalance + monthlyWages, // 将打工收入注入初始资金池
           daysToSimulate: 30,
           expenses: [
             { id: 'rent', name: 'Rent', type: 'fixed', amount: rent, frequency: 'monthly', dayOfCharge: 1 },
@@ -54,10 +53,11 @@ export default function App() {
         }
       } catch (e) { console.error(e); } finally { setLoading(false); }
     };
-    const timer = setTimeout(runSimulation, 200);
+    const timer = setTimeout(runSimulation, 200); // 200ms 极致防抖
     return () => clearTimeout(timer);
-  }, [initialBalance, rent, foodBudget, socialFreq, partTimeHours]); // 🌟 监听兼职时间的变化
+  }, [initialBalance, rent, foodBudget, socialFreq, partTimeHours]);
 
+  // 🌟 图表配置
   const getLineOption = () => ({
     tooltip: { trigger: 'axis' },
     legend: { data: ['Optimistic (Top 10%)', 'Median Forecast', 'Pessimistic (Bottom 10%)'], bottom: 0, textStyle: { color: isDarkMode ? 'rgba(255,255,255,0.85)' : '#333' } },
@@ -89,12 +89,14 @@ export default function App() {
     <ConfigProvider theme={{ algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
       <Layout style={{ minHeight: '100vh', padding: '20px', transition: 'all 0.3s', background: isDarkMode ? '#141414' : '#f0f2f5' }}>
         
+        {/* 顶部标题与暗黑模式切换 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <Title level={2} style={{ margin: 0, color: isDarkMode ? '#fff' : '#000' }}>UniBudget Lab: Decision Support System</Title>
           <Switch checkedChildren="🌙 Dark" unCheckedChildren="☀️ Light" checked={isDarkMode} onChange={setIsDarkMode} style={{ transform: 'scale(1.2)' }} />
         </div>
 
         <Row gutter={24}>
+          {/* 左侧控制台 */}
           <Col span={8}>
             <Card title="🎛️ Control Panel" bordered={false}>
               <Space direction="vertical" style={{ width: '100%' }} size="middle">
@@ -103,24 +105,24 @@ export default function App() {
                   <Text strong>Starting Balance (£):</Text>
                   <InputNumber min={0} value={initialBalance} onChange={setInitialBalance} style={{ width: '100%', marginTop: '4px' }} />
                 </div>
-                
                 <div>
                   <Text strong>Monthly Rent (£):</Text>
                   <InputNumber min={0} value={rent} onChange={setRent} style={{ width: '100%', marginTop: '4px' }} />
                 </div>
+                
                 <Divider style={{ margin: '12px 0' }} />
                 
                 <div><Text strong>Daily Food Budget (£): {foodBudget}</Text><Slider min={5} max={100} value={foodBudget} onChange={setFoodBudget} /></div>
                 <div><Text strong>Weekly Social Events: {socialFreq}</Text><Slider min={0} max={7} value={socialFreq} onChange={setSocialFreq} /></div>
                 
-                {/* 🌟 新增：绿色的兼职收入滑块 */}
+                {/* 兼职收入滑块 */}
                 <div style={{ padding: '10px', background: isDarkMode ? '#172a1a' : '#f6ffed', borderRadius: '8px', border: '1px solid #b7eb8f' }}>
                   <Text strong style={{ color: '#52c41a' }}><DollarCircleOutlined /> Part-time Job (hrs/week): {partTimeHours}h</Text>
                   <Slider min={0} max={20} value={partTimeHours} onChange={setPartTimeHours} />
                   <Text type="secondary" style={{ fontSize: '12px', color: '#52c41a' }}>* Est. £12/hr (Total: +£{monthlyWages}/mo)</Text>
                 </div>
                 
-                {/* 🌟 升级版收支净流动态面板 (包含 Wages) */}
+                {/* 资产动态面板 */}
                 <Card size="small" style={{ background: isDarkMode ? '#1f1f1f' : '#e6f7ff', border: isDarkMode ? '1px solid #434343' : '1px solid #91d5ff', marginTop: '8px' }}>
                   <Text type="secondary" style={{ fontSize: '13px', fontWeight: 'bold' }}>📊 30-Day Net Outlook</Text>
                   <div style={{ marginTop: '10px' }}>
@@ -139,10 +141,21 @@ export default function App() {
                   </div>
                 </Card>
 
+                {/* 🌟 找回的场景测试按钮！附带重置打工时间的逻辑 */}
+                <Space direction="vertical" style={{ width: '100%', marginTop: '12px' }}>
+                  <Button type="primary" danger block onClick={() => { setFoodBudget(60); setSocialFreq(5); setPartTimeHours(0); }}>
+                    Scenario: High Consumption (Crisis)
+                  </Button>
+                  <Button style={{ borderColor: '#52c41a', color: '#52c41a' }} block onClick={() => { setFoodBudget(15); setSocialFreq(1); setPartTimeHours(10); }}>
+                    Scenario: Frugal & Hustle (Safe)
+                  </Button>
+                </Space>
+
               </Space>
             </Card>
           </Col>
 
+          {/* 右侧可视化区域 */}
           <Col span={16}>
             <Spin spinning={loading} tip="Running 1,000 Monte Carlo simulations...">
               
@@ -174,6 +187,7 @@ export default function App() {
               <Card title="📈 30-Day Monte Carlo Projection">
                 <ReactECharts option={getLineOption()} style={{ height: '350px' }} theme={isDarkMode ? 'dark' : 'light'} />
               </Card>
+
             </Spin>
           </Col>
         </Row>
