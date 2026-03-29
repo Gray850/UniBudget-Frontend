@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-// 🌟 引入了 ConfigProvider, theme 和 Switch 用于暗黑模式
-import { Layout, Typography, Row, Col, Card, Slider, Button, Space, Statistic, Spin, InputNumber, Divider, Progress, Table, ConfigProvider, theme, Switch , Tooltip} from 'antd';
-import ReactECharts from 'echarts-for-react';
+// 🌟 删除了 Table 相关的导入
+import { Layout, Typography, Row, Col, Card, Slider, Button, Space, Statistic, Spin, InputNumber, Divider, Progress, ConfigProvider, theme, Switch, Tooltip } from 'antd';
 import { InfoCircleOutlined } from '@ant-design/icons';
+import ReactECharts from 'echarts-for-react';
+
 const { Title, Text } = Typography;
 
-// 🌟 第一步：把判断函数放在组件的最外面
 const getFeedbackMessage = (probability) => {
   if (probability <= 10) {
     return {
@@ -42,23 +42,9 @@ export default function App() {
     chartData: { days: [], median: [], worst: [], best: [] }
   });
 
-  // 🌟 新增：控制暗黑模式的状态开关
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // 模拟的历史账单数据
-  const mockTransactions = [
-    { id: 1, date: '2026-03-20', name: 'Tesco Supermarket', category: 'Food', amount: 45.20 },
-    { id: 2, date: '2026-03-21', name: 'Monthly Rent', category: 'Housing', amount: 550.00 },
-    { id: 3, date: '2026-03-22', name: 'University Guild', category: 'Social', amount: 15.00 },
-    { id: 4, date: '2026-03-23', name: 'Bus Pass', category: 'Transport', amount: 20.00 },
-  ];
-
-  const columns = [
-    { title: 'Date', dataIndex: 'date', key: 'date' },
-    { title: 'Description', dataIndex: 'name', key: 'name' },
-    { title: 'Category', dataIndex: 'category', key: 'category' },
-    { title: 'Amount', dataIndex: 'amount', key: 'amount', render: (text) => `£${text}` },
-  ];
+  // 🌟 这里已经帮你把 mockTransactions 和 columns 删得干干净净了！
 
   useEffect(() => {
     const runSimulation = async () => {
@@ -110,7 +96,7 @@ export default function App() {
     legend: { 
       data: ['Optimistic (Top 10%)', 'Median Forecast', 'Pessimistic (Bottom 10%)'], 
       bottom: 0,
-      textStyle: { color: isDarkMode ? '#rgba(255, 255, 255, 0.85)' : '#333' } // 🌟 图例颜色适配暗黑模式
+      textStyle: { color: isDarkMode ? 'rgba(255, 255, 255, 0.85)' : '#333' } 
     },
     grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
     xAxis: { 
@@ -145,11 +131,9 @@ export default function App() {
   const scoreColor = healthScore >= 80 ? '#52c41a' : healthScore >= 50 ? '#faad14' : '#ff4d4f';
 
   return (
-    // 🌟 核心：ConfigProvider 自动接管全局的暗色/亮色主题
     <ConfigProvider theme={{ algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
       <Layout style={{ minHeight: '100vh', padding: '20px', transition: 'all 0.3s', background: isDarkMode ? '#141414' : '#f0f2f5' }}>
         
-        {/* 🌟 顶部加入 Switch 开关，布局改为 flex 以便左右对齐 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
           <Title level={2} style={{ margin: 0, color: isDarkMode ? '#ffffff' : '#000000' }}>
             UniBudget Lab: Student Budget Decision Support System
@@ -199,11 +183,10 @@ export default function App() {
 
           <Col span={16}>
             <Spin spinning={loading} tip="Calculating 1,000 possibilities...">
-              {/* 🌟 动态适配暗色模式的卡片背景 */}
               <Card style={{ marginBottom: '16px', textAlign: 'center', background: isDarkMode ? '#1f1f1f' : '#fafafa' }}>
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '40px' }}>
                   <div>
-                    <Title level={4} style={{ margin: 0, color: isDarkMode ? '#rgba(255,255,255,0.85)' : '#595959' }}>Financial Health Score</Title>
+                    <Title level={4} style={{ margin: 0, color: isDarkMode ? 'rgba(255,255,255,0.85)' : '#595959' }}>Financial Health Score</Title>
                     <Text type="secondary">Based on stochastic risk analysis</Text>
                   </div>
                   <Progress 
@@ -216,6 +199,7 @@ export default function App() {
                 </div>
               </Card>
 
+              {/* 🌟 带有 Tooltips 金融科普的小卡片 */}
               <Row gutter={16}>
                 <Col span={8}>
                   <Card>
@@ -268,7 +252,6 @@ export default function App() {
                 </Col>
               </Row>
 
-              {/* 🌟 动态适配暗色模式的反馈框背景 */}
               <div style={{
                 marginTop: '16px',
                 padding: '16px',
@@ -285,20 +268,8 @@ export default function App() {
                 </div>
               </div>
 
-              {/* 🌟 ECharts 深度绑定暗色主题 */}
               <Card title="📊 30-Day Cash Flow Projection" style={{ marginTop: '16px' }}>
                 <ReactECharts option={getOption()} style={{ height: '350px' }} theme={isDarkMode ? 'dark' : 'light'} />
-              </Card>
-
-              {/* 🌟 把你漏掉的 Table 补上了 */}
-              <Card title="🧾 Recent Transactions (Billing Grid)" style={{ marginTop: '16px' }}>
-                <Table 
-                  dataSource={mockTransactions} 
-                  columns={columns} 
-                  pagination={{ pageSize: 3 }} 
-                  size="small"
-                  rowKey="id"
-                />
               </Card>
 
             </Spin>
