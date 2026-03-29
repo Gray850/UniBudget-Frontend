@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Typography, Row, Col, Card, Slider, Button, Space, Statistic, Spin, InputNumber, Divider } from 'antd';
+import { Layout, Typography, Row, Col, Card, Slider, Button, Space, Statistic, Spin, InputNumber, Divider ,Progress} from 'antd';
 import ReactECharts from 'echarts-for-react';
 
 const { Title, Text } = Typography;
@@ -28,6 +28,7 @@ const getFeedbackMessage = (probability) => {
     };
   }
 };
+
 
 export default function App() {
   const [initialBalance, setInitialBalance] = useState(1500);
@@ -138,7 +139,10 @@ export default function App() {
 
   // 🌟 第二步：在 return 之前，调用判断函数，拿到对应的文案和颜色
   const feedback = getFeedbackMessage(results.probDefault);
-
+// 🌟 新增：将破产概率反向转化为 0-100 的健康综合评分
+  const healthScore = Math.max(0, 100 - Math.round(results.probDefault));
+  // 根据分数决定表盘的颜色
+  const scoreColor = healthScore >= 80 ? '#52c41a' : healthScore >= 50 ? '#faad14' : '#ff4d4f';
   return (
     <Layout style={{ minHeight: '100vh', padding: '20px', background: '#f0f2f5' }}>
       <Title level={2} style={{ textAlign: 'center', marginBottom: '30px' }}>
@@ -181,6 +185,22 @@ export default function App() {
 
         <Col span={16}>
           <Spin spinning={loading} tip="Calculating 1,000 possibilities...">
+            {/* 🌟 新增：财务健康综合评分仪 */}
+            <Card style={{ marginBottom: '16px', textAlign: 'center', background: '#fafafa' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '40px' }}>
+                <div>
+                  <Title level={4} style={{ margin: 0, color: '#595959' }}>Financial Health Score</Title>
+                  <Text type="secondary">Based on stochastic risk analysis</Text>
+                </div>
+                <Progress 
+                  type="dashboard" 
+                  percent={healthScore} 
+                  strokeColor={scoreColor}
+                  format={percent => `${percent} pts`}
+                  size={120}
+                />
+              </div>
+            </Card>
             <Row gutter={16}>
               <Col span={8}><Card><Statistic title="Prob. of Default" value={results.probDefault} suffix="%" valueStyle={{ color: results.probDefault > 20 ? '#cf1322' : '#3f8600' }} /></Card></Col>
               <Col span={8}><Card><Statistic title="Median End Balance" value={results.medianBalance} prefix="£" /></Card></Col>
