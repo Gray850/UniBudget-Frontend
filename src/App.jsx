@@ -1,34 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Typography, Row, Col, Card, Slider, Button, Space, Statistic, Spin, InputNumber, Divider ,Progress} from 'antd';
+// 🌟 引入了 ConfigProvider, theme 和 Switch 用于暗黑模式
+import { Layout, Typography, Row, Col, Card, Slider, Button, Space, Statistic, Spin, InputNumber, Divider, Progress, Table, ConfigProvider, theme, Switch } from 'antd';
 import ReactECharts from 'echarts-for-react';
 
 const { Title, Text } = Typography;
 
-// 🌟 第一步：把判断函数放在组件的最外面（这里使用了 Ant Design 的标准色系）
+// 🌟 第一步：把判断函数放在组件的最外面
 const getFeedbackMessage = (probability) => {
   if (probability <= 10) {
     return {
-      type: 'success', color: '#52c41a', // 绿色
+      type: 'success', color: '#52c41a',
       text: '🎉 Your financial outlook is solid! Your current budget can comfortably handle most unexpected expenses. Keep up the good work.'
     };
   } else if (probability > 10 && probability <= 25) {
     return {
-      type: 'warning', color: '#faad14', // 橙黄色
+      type: 'warning', color: '#faad14',
       text: '👀 There is a slight risk of a cash shortfall. Keep an eye on non-essential spending and try to build a small emergency buffer.'
     };
   } else if (probability > 25 && probability <= 50) {
     return {
-      type: 'danger', color: '#ff4d4f', // 红色
+      type: 'danger', color: '#ff4d4f',
       text: '⚠️ Warning: Your spending pattern carries a high risk! An unexpected bill could lead to an overdraft. We strongly recommend reviewing your budget.'
     };
   } else {
     return {
-      type: 'critical', color: '#cf1322', // 深红色
+      type: 'critical', color: '#cf1322',
       text: '🚨 Critical Alert: High probability of fund depletion! Immediate action is needed: look for ways to boost your income or significantly reduce fixed costs.'
     };
   }
 };
-
 
 export default function App() {
   const [initialBalance, setInitialBalance] = useState(1500);
@@ -41,7 +41,25 @@ export default function App() {
     probDefault: 0, medianBalance: 0, worstCase: 0,
     chartData: { days: [], median: [], worst: [], best: [] }
   });
- 
+
+  // 🌟 新增：控制暗黑模式的状态开关
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // 模拟的历史账单数据
+  const mockTransactions = [
+    { id: 1, date: '2026-03-20', name: 'Tesco Supermarket', category: 'Food', amount: 45.20 },
+    { id: 2, date: '2026-03-21', name: 'Monthly Rent', category: 'Housing', amount: 550.00 },
+    { id: 3, date: '2026-03-22', name: 'University Guild', category: 'Social', amount: 15.00 },
+    { id: 4, date: '2026-03-23', name: 'Bus Pass', category: 'Transport', amount: 20.00 },
+  ];
+
+  const columns = [
+    { title: 'Date', dataIndex: 'date', key: 'date' },
+    { title: 'Description', dataIndex: 'name', key: 'name' },
+    { title: 'Category', dataIndex: 'category', key: 'category' },
+    { title: 'Amount', dataIndex: 'amount', key: 'amount', render: (text) => `£${text}` },
+  ];
+
   useEffect(() => {
     const runSimulation = async () => {
       setLoading(true);
@@ -49,11 +67,9 @@ export default function App() {
         const data = {
           initialBalance: initialBalance, 
           daysToSimulate: 30,
-         expenses: [
+          expenses: [
             { id: 'rent', name: 'Rent', type: 'fixed', amount: rent, frequency: 'monthly', dayOfCharge: 1 },
-            // 🌟 核心修改 1：让吃饭的开销变得极度不可控！(上下浮动 50% 甚至更多)
             { id: 'food', name: 'Food', type: 'variable', min: Math.max(0, foodBudget * 0.4), max: foodBudget * 1.8, frequency: 'daily' },
-            // 🌟 核心修改 2：社交可能不花钱(蹭饭)，也可能去高档酒吧花大钱！
             { id: 'social', name: 'Social', type: 'sporadic', min: 0, max: 200, probabilityPerDay: socialFreq / 7 }
           ]
         };
@@ -93,7 +109,8 @@ export default function App() {
     tooltip: { trigger: 'axis' },
     legend: { 
       data: ['Optimistic (Top 10%)', 'Median Forecast', 'Pessimistic (Bottom 10%)'], 
-      bottom: 0 
+      bottom: 0,
+      textStyle: { color: isDarkMode ? '#rgba(255, 255, 255, 0.85)' : '#333' } // 🌟 图例颜色适配暗黑模式
     },
     grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
     xAxis: { 
@@ -107,130 +124,141 @@ export default function App() {
     },
     series: [
       {
-        name: 'Optimistic (Top 10%)',
-        type: 'line',
-        data: results.chartData?.best || [],
-        itemStyle: { color: '#52c41a' }, 
-        lineStyle: { type: 'dashed', width: 2 }, 
-        symbol: 'none'
+        name: 'Optimistic (Top 10%)', type: 'line', data: results.chartData?.best || [],
+        itemStyle: { color: '#52c41a' }, lineStyle: { type: 'dashed', width: 2 }, symbol: 'none'
       },
       {
-        name: 'Pessimistic (Bottom 10%)',
-        type: 'line',
-        data: results.chartData?.worst || [],
-        itemStyle: { color: '#ff4d4f' }, 
-        lineStyle: { type: 'dashed', width: 2 }, 
-        symbol: 'none',
+        name: 'Pessimistic (Bottom 10%)', type: 'line', data: results.chartData?.worst || [],
+        itemStyle: { color: '#ff4d4f' }, lineStyle: { type: 'dashed', width: 2 }, symbol: 'none',
         areaStyle: { color: 'rgba(255, 77, 79, 0.1)' } 
       },
       {
-        name: 'Median Forecast',
-        type: 'line',
-        data: results.chartData?.median || [],
-        itemStyle: { color: '#1890ff' }, 
-        lineStyle: { width: 3 }, 
-        symbol: 'none',
-        markLine: { 
-          data: [{ yAxis: 0, name: 'Bankrupt', lineStyle: { color: 'red', type: 'solid' } }] 
-        }
+        name: 'Median Forecast', type: 'line', data: results.chartData?.median || [],
+        itemStyle: { color: '#1890ff' }, lineStyle: { width: 3 }, symbol: 'none',
+        markLine: { data: [{ yAxis: 0, name: 'Bankrupt', lineStyle: { color: 'red', type: 'solid' } }] }
       }
     ]
   });
 
-  // 🌟 第二步：在 return 之前，调用判断函数，拿到对应的文案和颜色
   const feedback = getFeedbackMessage(results.probDefault);
-// 🌟 新增：将破产概率反向转化为 0-100 的健康综合评分
   const healthScore = Math.max(0, 100 - Math.round(results.probDefault));
-  // 根据分数决定表盘的颜色
   const scoreColor = healthScore >= 80 ? '#52c41a' : healthScore >= 50 ? '#faad14' : '#ff4d4f';
+
   return (
-    <Layout style={{ minHeight: '100vh', padding: '20px', background: '#f0f2f5' }}>
-      <Title level={2} style={{ textAlign: 'center', marginBottom: '30px' }}>
-        UniBudget Lab: Student Budget Decision Support System
-      </Title>
+    // 🌟 核心：ConfigProvider 自动接管全局的暗色/亮色主题
+    <ConfigProvider theme={{ algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
+      <Layout style={{ minHeight: '100vh', padding: '20px', transition: 'all 0.3s', background: isDarkMode ? '#141414' : '#f0f2f5' }}>
+        
+        {/* 🌟 顶部加入 Switch 开关，布局改为 flex 以便左右对齐 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+          <Title level={2} style={{ margin: 0, color: isDarkMode ? '#ffffff' : '#000000' }}>
+            UniBudget Lab: Student Budget Decision Support System
+          </Title>
+          <Switch 
+            checkedChildren="🌙 Dark" 
+            unCheckedChildren="☀️ Light" 
+            checked={isDarkMode} 
+            onChange={setIsDarkMode} 
+            style={{ transform: 'scale(1.2)' }}
+          />
+        </div>
 
-      <Row gutter={24}>
-        <Col span={8}>
-          <Card title="🎛️ Financial & Lifestyle Inputs" bordered={false}>
-            <Space direction="vertical" style={{ width: '100%' }} size="middle">
-              <div>
-                <Text strong>Current Balance (£): </Text>
-                <InputNumber min={0} value={initialBalance} onChange={setInitialBalance} style={{ width: '100%' }} />
-              </div>
-              <div>
-                <Text strong>Monthly Rent (£): </Text>
-                <InputNumber min={0} value={rent} onChange={setRent} style={{ width: '100%' }} />
-              </div>
-              <Divider style={{ margin: '12px 0' }} />
-              <div>
-                <Text strong>Daily Food Budget (£): {foodBudget}</Text>
-                <Slider min={5} max={100} value={foodBudget} onChange={setFoodBudget} />
-              </div>
-              <div>
-                <Text strong>Weekly Social Events: {socialFreq}</Text>
-                <Slider min={0} max={7} value={socialFreq} onChange={setSocialFreq} />
-              </div>
-              
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <Button type="primary" danger block onClick={() => { setFoodBudget(60); setSocialFreq(5); }}>
-                  Scenario: High Consumption
-                </Button>
-                <Button block onClick={() => { setFoodBudget(15); setSocialFreq(1); }}>
-                  Scenario: Frugal Lifestyle
-                </Button>
-              </Space>
-            </Space>
-          </Card>
-        </Col>
-
-        <Col span={16}>
-          <Spin spinning={loading} tip="Calculating 1,000 possibilities...">
-            {/* 🌟 新增：财务健康综合评分仪 */}
-            <Card style={{ marginBottom: '16px', textAlign: 'center', background: '#fafafa' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '40px' }}>
+        <Row gutter={24}>
+          <Col span={8}>
+            <Card title="🎛️ Financial & Lifestyle Inputs" bordered={false}>
+              <Space direction="vertical" style={{ width: '100%' }} size="middle">
                 <div>
-                  <Title level={4} style={{ margin: 0, color: '#595959' }}>Financial Health Score</Title>
-                  <Text type="secondary">Based on stochastic risk analysis</Text>
+                  <Text strong>Current Balance (£): </Text>
+                  <InputNumber min={0} value={initialBalance} onChange={setInitialBalance} style={{ width: '100%' }} />
                 </div>
-                <Progress 
-                  type="dashboard" 
-                  percent={healthScore} 
-                  strokeColor={scoreColor}
-                  format={percent => `${percent} pts`}
-                  size={120}
+                <div>
+                  <Text strong>Monthly Rent (£): </Text>
+                  <InputNumber min={0} value={rent} onChange={setRent} style={{ width: '100%' }} />
+                </div>
+                <Divider style={{ margin: '12px 0' }} />
+                <div>
+                  <Text strong>Daily Food Budget (£): {foodBudget}</Text>
+                  <Slider min={5} max={100} value={foodBudget} onChange={setFoodBudget} />
+                </div>
+                <div>
+                  <Text strong>Weekly Social Events: {socialFreq}</Text>
+                  <Slider min={0} max={7} value={socialFreq} onChange={setSocialFreq} />
+                </div>
+                
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <Button type="primary" danger block onClick={() => { setFoodBudget(60); setSocialFreq(5); }}>
+                    Scenario: High Consumption
+                  </Button>
+                  <Button block onClick={() => { setFoodBudget(15); setSocialFreq(1); }}>
+                    Scenario: Frugal Lifestyle
+                  </Button>
+                </Space>
+              </Space>
+            </Card>
+          </Col>
+
+          <Col span={16}>
+            <Spin spinning={loading} tip="Calculating 1,000 possibilities...">
+              {/* 🌟 动态适配暗色模式的卡片背景 */}
+              <Card style={{ marginBottom: '16px', textAlign: 'center', background: isDarkMode ? '#1f1f1f' : '#fafafa' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '40px' }}>
+                  <div>
+                    <Title level={4} style={{ margin: 0, color: isDarkMode ? '#rgba(255,255,255,0.85)' : '#595959' }}>Financial Health Score</Title>
+                    <Text type="secondary">Based on stochastic risk analysis</Text>
+                  </div>
+                  <Progress 
+                    type="dashboard" 
+                    percent={healthScore} 
+                    strokeColor={scoreColor}
+                    format={percent => `${percent} pts`}
+                    size={120}
+                  />
+                </div>
+              </Card>
+
+              <Row gutter={16}>
+                <Col span={8}><Card><Statistic title="Prob. of Default" value={results.probDefault} suffix="%" valueStyle={{ color: results.probDefault > 20 ? '#cf1322' : '#3f8600' }} /></Card></Col>
+                <Col span={8}><Card><Statistic title="Median End Balance" value={results.medianBalance} prefix="£" /></Card></Col>
+                <Col span={8}><Card><Statistic title="Worst Case" value={results.worstCase} prefix="£" /></Card></Col>
+              </Row>
+
+              {/* 🌟 动态适配暗色模式的反馈框背景 */}
+              <div style={{
+                marginTop: '16px',
+                padding: '16px',
+                backgroundColor: isDarkMode ? '#1f1f1f' : '#ffffff',
+                borderRadius: '8px',
+                borderLeft: `5px solid ${feedback.color}`,
+                boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+              }}>
+                <div style={{ color: feedback.color, fontSize: '15px', fontWeight: '500' }}>
+                  {feedback.text}
+                </div>
+                <div style={{ marginTop: '8px', fontSize: '12px', color: '#8c8c8c' }}>
+                  * Results are probabilistic projections, not professional financial advice.
+                </div>
+              </div>
+
+              {/* 🌟 ECharts 深度绑定暗色主题 */}
+              <Card title="📊 30-Day Cash Flow Projection" style={{ marginTop: '16px' }}>
+                <ReactECharts option={getOption()} style={{ height: '350px' }} theme={isDarkMode ? 'dark' : 'light'} />
+              </Card>
+
+              {/* 🌟 把你漏掉的 Table 补上了 */}
+              <Card title="🧾 Recent Transactions (Billing Grid)" style={{ marginTop: '16px' }}>
+                <Table 
+                  dataSource={mockTransactions} 
+                  columns={columns} 
+                  pagination={{ pageSize: 3 }} 
+                  size="small"
+                  rowKey="id"
                 />
-              </div>
-            </Card>
-            <Row gutter={16}>
-              <Col span={8}><Card><Statistic title="Prob. of Default" value={results.probDefault} suffix="%" valueStyle={{ color: results.probDefault > 20 ? '#cf1322' : '#3f8600' }} /></Card></Col>
-              <Col span={8}><Card><Statistic title="Median End Balance" value={results.medianBalance} prefix="£" /></Card></Col>
-              <Col span={8}><Card><Statistic title="Worst Case" value={results.worstCase} prefix="£" /></Card></Col>
-            </Row>
+              </Card>
 
-            {/* 🌟 第三步：UI 渲染。我把它放在了那三个数据卡片的正下方，图表的正上方 */}
-            <div style={{
-              marginTop: '16px',
-              padding: '16px',
-              backgroundColor: '#ffffff',
-              borderRadius: '8px',
-              borderLeft: `5px solid ${feedback.color}`,
-              boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-            }}>
-              <div style={{ color: feedback.color, fontSize: '15px', fontWeight: '500' }}>
-                {feedback.text}
-              </div>
-              {/* 结合你们文档里提到的 Ethical Considerations，加上免责声明 */}
-              <div style={{ marginTop: '8px', fontSize: '12px', color: '#8c8c8c' }}>
-                * Results are probabilistic projections, not professional financial advice.
-              </div>
-            </div>
-
-            <Card title="📊 30-Day Cash Flow Projection" style={{ marginTop: '16px' }}>
-              <ReactECharts option={getOption()} style={{ height: '350px' }} />
-            </Card>
-          </Spin>
-        </Col>
-      </Row>
-    </Layout>
+            </Spin>
+          </Col>
+        </Row>
+      </Layout>
+    </ConfigProvider>
   );
 }
