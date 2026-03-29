@@ -24,10 +24,10 @@ const getActionableAdvice = (food, social, prob, partTime) => {
 };
 
 export default function App() {
-  const [initialBalance, setInitialBalance] = useState(1200);
-  const [rent, setRent] = useState(600);
+  const [initialBalance, setInitialBalance] = useState(2000);
+  const [rent, setRent] = useState(800);
   const [foodBudget, setFoodBudget] = useState(25);
-  const [socialFreq, setSocialFreq] = useState(2);
+  const [socialFreq, setSocialFreq] = useState(1);
   const [partTimeHours, setPartTimeHours] = useState(0); 
   
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -48,7 +48,7 @@ export default function App() {
           daysToSimulate: 30,
           expenses: [
             { id: 'rent', name: 'Rent', type: 'fixed', amount: rent, frequency: 'monthly', dayOfCharge: 1 },
-            { id: 'food', name: 'Food', type: 'variable', min: Math.max(0, foodBudget * 0.4), max: foodBudget * 1.8, frequency: 'daily' },
+            { id: 'food', name: 'Food', type: 'variable', min: Math.max(0, foodBudget * 0.5), max: foodBudget * 1.5, frequency: 'daily' },
             { id: 'social', name: 'Social', type: 'sporadic', min: 0, max: 80, probabilityPerDay: socialFreq / 7 }
           ]
         };
