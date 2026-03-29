@@ -6,12 +6,12 @@ const { Title, Text } = Typography;
 
 // 🌟 第一步：把判断函数放在组件的最外面（这里使用了 Ant Design 的标准色系）
 const getFeedbackMessage = (probability) => {
-  if (probability <= 5) {
+  if (probability <= 10) {
     return {
       type: 'success', color: '#52c41a', // 绿色
       text: '🎉 Your financial outlook is solid! Your current budget can comfortably handle most unexpected expenses. Keep up the good work.'
     };
-  } else if (probability > 5 && probability <= 25) {
+  } else if (probability > 10 && probability <= 25) {
     return {
       type: 'warning', color: '#faad14', // 橙黄色
       text: '👀 There is a slight risk of a cash shortfall. Keep an eye on non-essential spending and try to build a small emergency buffer.'
@@ -30,10 +30,10 @@ const getFeedbackMessage = (probability) => {
 };
 
 export default function App() {
-  const [initialBalance, setInitialBalance] = useState(1200);
+  const [initialBalance, setInitialBalance] = useState(1500);
   const [rent, setRent] = useState(550);
-  const [foodBudget, setFoodBudget] = useState(15);
-  const [socialFreq, setSocialFreq] = useState(1);
+  const [foodBudget, setFoodBudget] = useState(20);
+  const [socialFreq, setSocialFreq] = useState(0);
   
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState({
