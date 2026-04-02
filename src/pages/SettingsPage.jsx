@@ -2,18 +2,22 @@
 // User Settings and Compliance Centre
 // Features: Account management, GDPR data controls, Notifications, and Interactive Theme Colors.
 
-import { useState } from "react"
+import React, { useState, useContext, createContext } from "react"
 import {
   User, ShieldCheck, Bell, Palette,
   Trash2, Download, LogOut, ChevronRight, CheckCircle, Moon, Sun
 } from "lucide-react"
 
-// 🌟 独立的主题与颜色字典
-const THEMES = {
+// ---------------------------------------------------------------------------
+// Context Definition (Inlined to fix build errors in the preview environment)
+// ---------------------------------------------------------------------------
+export const THEMES = {
   indigo: { bg: "bg-indigo-600", text: "text-indigo-500", border: "border-indigo-500", ring: "ring-indigo-500" },
   emerald: { bg: "bg-emerald-600", text: "text-emerald-500", border: "border-emerald-500", ring: "ring-emerald-500" },
   rose: { bg: "bg-rose-600", text: "text-rose-500", border: "border-rose-500", ring: "ring-rose-500" },
 }
+
+export const ThemeContext = createContext()
 
 // ---------------------------------------------------------------------------
 // Sub-components (支持主题与暗黑模式传入)
@@ -79,13 +83,10 @@ function DangerButton({ icon: Icon, label, description, buttonLabel, onClick, is
 }
 
 // ---------------------------------------------------------------------------
-// Main Settings Page
+// Main Settings Content
 // ---------------------------------------------------------------------------
-export default function Settings() {
-  // 🌟 独立的主题颜色和黑夜模式状态
-  const [themeKey, setThemeKey] = useState("indigo")
-  const currentTheme = THEMES[themeKey]
-  const [isDark, setIsDark] = useState(true)
+export function SettingsContent() {
+  const { isDark, setIsDark, themeKey, setThemeKey, theme: currentTheme } = useContext(ThemeContext)
 
   const [displayName, setDisplayName] = useState("Owen Lin")
   const [email] = useState("sgylin22@liverpool.ac.uk")
@@ -242,11 +243,11 @@ export default function Settings() {
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className={`flex-1 border rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-colors ${currentTheme.border} focus:border-2 ${isDark ? "bg-gray-950 border-gray-800 text-white" : "bg-white border-gray-200 text-gray-900 shadow-sm"}`}
+                  className={`flex-1 border rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-colors ${currentTheme?.border || 'border-indigo-500'} focus:border-2 ${isDark ? "bg-gray-950 border-gray-800 text-white" : "bg-white border-gray-200 text-gray-900 shadow-sm"}`}
                 />
                 <button
                   onClick={handleSaveName}
-                  className={`${currentTheme.bg} hover:brightness-110 text-white rounded-xl px-5 py-2.5 text-sm font-bold transition-colors`}
+                  className={`${currentTheme?.bg || 'bg-indigo-600'} hover:brightness-110 text-white rounded-xl px-5 py-2.5 text-sm font-bold transition-colors`}
                 >
                   Save
                 </button>
@@ -263,7 +264,7 @@ export default function Settings() {
               </div>
             )}
             {nameSaved && (
-              <p className={`text-xs ${currentTheme.text} mt-1.5 flex items-center gap-1`}>
+              <p className={`text-xs ${currentTheme?.text || 'text-indigo-500'} mt-1.5 flex items-center gap-1`}>
                 <CheckCircle className="w-3 h-3" /> Name updated.
               </p>
             )}
@@ -301,7 +302,7 @@ export default function Settings() {
               "We never sell your data to third parties",
             ].map((item) => (
               <div key={item} className="flex items-start gap-2">
-                <ShieldCheck className={`w-3.5 h-3.5 ${currentTheme.text} mt-0.5 shrink-0`} />
+                <ShieldCheck className={`w-3.5 h-3.5 ${currentTheme?.text || 'text-indigo-500'} mt-0.5 shrink-0`} />
                 <p className="text-xs text-gray-500">{item}</p>
               </div>
             ))}
@@ -316,7 +317,7 @@ export default function Settings() {
             isDark={isDark}
           />
           {exportFlash && (
-            <p className={`text-xs ${currentTheme.text} flex items-center gap-1`}>
+            <p className={`text-xs ${currentTheme?.text || 'text-indigo-500'} flex items-center gap-1`}>
               <CheckCircle className="w-3 h-3" /> Export downloaded.
             </p>
           )}
@@ -359,5 +360,20 @@ export default function Settings() {
 
       </main>
     </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Main Export (Wrapped for standalone functionality)
+// ---------------------------------------------------------------------------
+export default function App() {
+  const [themeKey, setThemeKey] = useState("indigo")
+  const [isDark, setIsDark] = useState(true)
+  const theme = THEMES[themeKey]
+
+  return (
+    <ThemeContext.Provider value={{ isDark, setIsDark, themeKey, setThemeKey, theme }}>
+      <SettingsContent />
+    </ThemeContext.Provider>
   )
 }
