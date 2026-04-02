@@ -1,33 +1,15 @@
 // src/pages/SettingsPage.jsx
-import React, { useState, useContext, createContext } from "react";
+import React, { useState, useContext } from "react";
 import {
   User, ShieldCheck, Bell, Palette,
   Trash2, Download, LogOut, ChevronRight, CheckCircle, Moon, Sun
 } from "lucide-react";
 
-// ============================================================================
-// ⚠️⚠️⚠️ 极其重要的本地使用步骤 ⚠️⚠️⚠️
-// 为了实现你要求的“全站联动变色”，当你把这段代码粘贴到你的 VS Code 后，请执行以下两步：
-// 
-// 1. 删掉下面这行代码前面的双斜杠 (//)，让它恢复成正常的引入：
-// // import { ThemeContext, THEMES } from "../ThemeContext";
-//
-// 2. 删掉下面这个专门为了在线预览不报错而写的“临时区块”（第 19 行到第 28 行）。
-// ============================================================================
-
-// ⬇️ 临时区块开始 (在本地 VS Code 中请将这段完全删除) ⬇️
-const THEMES = {
-  indigo: { bg: "bg-indigo-600", text: "text-indigo-500", border: "border-indigo-500", ring: "ring-indigo-500" },
-  emerald: { bg: "bg-emerald-600", text: "text-emerald-500", border: "border-emerald-500", ring: "ring-emerald-500" },
-  rose: { bg: "bg-rose-600", text: "text-rose-500", border: "border-rose-500", ring: "ring-rose-500" },
-};
-const ThemeContext = createContext({
-  isDark: true, setIsDark: () => {}, themeKey: "indigo", setThemeKey: () => {}, theme: THEMES.indigo
-});
-// ⬆️ 临时区块结束 ⬆️
+// 🌟 核心：必须引入项目根目录下的全局主题（这才是全站联动的“通讯电缆”）
+import { ThemeContext, THEMES } from "../ThemeContext";
 
 // ---------------------------------------------------------------------------
-// 子组件 (支持主题与暗黑模式传入)
+// 子组件 (图标和颜色会根据全局主题 theme 动态改变)
 // ---------------------------------------------------------------------------
 function SettingsSection({ icon: Icon, title, description, children, theme, isDark }) {
   return (
@@ -90,9 +72,10 @@ function DangerButton({ icon: Icon, label, description, buttonLabel, onClick, is
 }
 
 // ---------------------------------------------------------------------------
-// 主设置页面组件
+// 主设置页面组件 (直接导出，对接全局状态)
 // ---------------------------------------------------------------------------
 export default function SettingsPage() {
+  // 🌟 这里才是真正的“变色控制器”，它控制的是整个应用的 ThemeContext
   const { isDark, setIsDark, themeKey, setThemeKey, theme: currentTheme } = useContext(ThemeContext);
 
   const [displayName, setDisplayName] = useState("Owen Lin");
@@ -159,6 +142,7 @@ export default function SettingsPage() {
           theme={currentTheme}
           isDark={isDark}
         >
+          {/* 白天/黑夜模式切换：直接调用全局 setIsDark */}
           <ToggleRow
             label="Dark Mode"
             description="Toggle between light and dark themes."
@@ -168,6 +152,7 @@ export default function SettingsPage() {
             isDark={isDark}
           />
           
+          {/* 主题色选择器：直接调用全局 setThemeKey */}
           <div className={`flex items-center justify-between p-3 border rounded-xl transition-colors ${isDark ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
             <div>
               <p className={`text-sm font-semibold ${isDark ? "text-gray-300" : "text-gray-700"}`}>Primary Accent</p>
