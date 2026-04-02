@@ -2,44 +2,28 @@
 // User Settings and Compliance Centre
 // Features: Account management, GDPR data controls, Notifications, and Interactive Theme Colors.
 
-import React, { useState, useContext, createContext } from "react"
+import { useState } from "react"
 import {
   User, ShieldCheck, Bell, Palette,
-  Trash2, Download, LogOut, ChevronRight, CheckCircle,
+  Trash2, Download, LogOut, ChevronRight, CheckCircle, Moon, Sun
 } from "lucide-react"
 
-// ---------------------------------------------------------------------------
-// 🌟 临时本地主题配置 (为了确保预览正常运行)
-// 请在您本地的项目中，将下面这段替换为：
-// import { ThemeContext, THEMES } from "../ThemeContext"
-// ---------------------------------------------------------------------------
+// 🌟 独立的主题与颜色字典
 const THEMES = {
-  indigo: { bg: "bg-indigo-500", text: "text-indigo-400", border: "border-indigo-500" },
-  emerald: { bg: "bg-emerald-500", text: "text-emerald-400", border: "border-emerald-500" },
-  rose: { bg: "bg-rose-500", text: "text-rose-400", border: "border-rose-500" }
-};
-
-const ThemeContext = createContext({
-  isDark: true,
-  setIsDark: () => {},
-  themeKey: "indigo",
-  setThemeKey: () => {},
-  theme: THEMES.indigo
-});
-// ---------------------------------------------------------------------------
+  indigo: { bg: "bg-indigo-600", text: "text-indigo-500", border: "border-indigo-500", ring: "ring-indigo-500" },
+  emerald: { bg: "bg-emerald-600", text: "text-emerald-500", border: "border-emerald-500", ring: "ring-emerald-500" },
+  rose: { bg: "bg-rose-600", text: "text-rose-500", border: "border-rose-500", ring: "ring-rose-500" },
+}
 
 // ---------------------------------------------------------------------------
-// Sub-components
+// Sub-components (支持主题与暗黑模式传入)
 // ---------------------------------------------------------------------------
-function SettingsSection({ icon: Icon, title, description, children }) {
-  // 接入主题，让图标颜色跟随主题变化
-  const { theme } = useContext(ThemeContext)
-
+function SettingsSection({ icon: Icon, title, description, children, theme, isDark }) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-xl">
+    <div className={`border rounded-2xl p-6 shadow-xl transition-colors ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}>
       <div className="flex items-center gap-3 mb-1">
-        <Icon className={`w-4 h-4 ${theme.text}`} />
-        <h3 className="font-bold text-base text-white">{title}</h3>
+        <Icon className={`w-4 h-4 ${theme?.text || 'text-indigo-500'}`} />
+        <h3 className={`font-bold text-base ${isDark ? "text-white" : "text-gray-900"}`}>{title}</h3>
       </div>
       {description && (
         <p className="text-xs text-gray-500 mb-5 ml-7">{description}</p>
@@ -49,22 +33,19 @@ function SettingsSection({ icon: Icon, title, description, children }) {
   )
 }
 
-function ToggleRow({ label, description, enabled, onChange }) {
-  // 接入主题，让开关的激活颜色跟随主题变化
-  const { theme } = useContext(ThemeContext)
-
+function ToggleRow({ label, description, enabled, onChange, theme, isDark }) {
   return (
-    <div className="flex items-center justify-between gap-4 p-3 bg-gray-950 border border-gray-800 rounded-xl">
+    <div className={`flex items-center justify-between gap-4 p-3 border rounded-xl transition-colors ${isDark ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
       <div>
-        <p className="text-sm font-semibold text-gray-300">{label}</p>
+        <p className={`text-sm font-semibold ${isDark ? "text-gray-300" : "text-gray-700"}`}>{label}</p>
         {description && (
-          <p className="text-xs text-gray-600 mt-0.5">{description}</p>
+          <p className={`text-xs mt-0.5 ${isDark ? "text-gray-600" : "text-gray-500"}`}>{description}</p>
         )}
       </div>
       <button
         onClick={() => onChange(!enabled)}
         className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ${
-          enabled ? theme.bg : "bg-gray-700"
+          enabled ? (theme?.bg || "bg-indigo-600") : (isDark ? "bg-gray-700" : "bg-gray-300")
         }`}
       >
         <span
@@ -77,18 +58,18 @@ function ToggleRow({ label, description, enabled, onChange }) {
   )
 }
 
-function DangerButton({ icon: Icon, label, description, buttonLabel, onClick }) {
+function DangerButton({ icon: Icon, label, description, buttonLabel, onClick, isDark }) {
   return (
-    <div className="flex items-center justify-between gap-4 p-4 bg-rose-950/10 border border-rose-900/30 rounded-xl">
+    <div className={`flex items-center justify-between gap-4 p-4 border rounded-xl transition-colors ${isDark ? "bg-rose-950/10 border-rose-900/30" : "bg-rose-50 border-rose-200"}`}>
       <div>
-        <p className="text-sm font-semibold text-rose-400">{label}</p>
+        <p className={`text-sm font-semibold ${isDark ? "text-rose-400" : "text-rose-600"}`}>{label}</p>
         {description && (
-          <p className="text-xs text-rose-400/60 mt-0.5">{description}</p>
+          <p className={`text-xs mt-0.5 ${isDark ? "text-rose-400/60" : "text-rose-500"}`}>{description}</p>
         )}
       </div>
       <button
         onClick={onClick}
-        className="flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white transition-all duration-200 shrink-0"
+        className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-xl border transition-all duration-200 shrink-0 ${isDark ? "bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white" : "bg-white border-rose-200 text-rose-600 hover:bg-rose-500 hover:text-white shadow-sm"}`}
       >
         <Icon className="w-3.5 h-3.5" />
         {buttonLabel}
@@ -101,8 +82,10 @@ function DangerButton({ icon: Icon, label, description, buttonLabel, onClick }) 
 // Main Settings Page
 // ---------------------------------------------------------------------------
 export default function Settings() {
-  // 👇 获取全局主题状态
-  const { isDark, setIsDark, themeKey, setThemeKey, theme } = useContext(ThemeContext)
+  // 🌟 独立的主题颜色和黑夜模式状态
+  const [themeKey, setThemeKey] = useState("indigo")
+  const currentTheme = THEMES[themeKey]
+  const [isDark, setIsDark] = useState(true)
 
   const [displayName, setDisplayName] = useState("Owen Lin")
   const [email] = useState("sgylin22@liverpool.ac.uk")
@@ -141,224 +124,240 @@ export default function Settings() {
   }
 
   const handleDeleteAccount = () => {
-  if (window.confirm("This will permanently delete all your local data. Are you sure?")) {
-    localStorage.clear()
-    sessionStorage.clear()
-    setDeleteFlash(true)
-    setTimeout(() => window.location.href = "/login", 1500)
+    if (window.confirm("This will permanently delete all your local data. Are you sure?")) {
+      localStorage.clear()
+      sessionStorage.clear()
+      setDeleteFlash(true)
+      setTimeout(() => window.location.href = "/login", 1500)
+    }
   }
-}
 
   return (
-    <main className="min-h-full bg-gray-950 max-w-3xl mx-auto px-6 py-8 space-y-6">
+    <div className={`min-h-screen transition-colors duration-300 ${isDark ? "bg-gray-950" : "bg-gray-50"}`}>
+      <main className="max-w-3xl mx-auto px-6 py-8 space-y-6">
 
-      {/* Page header */}
-      <div>
-        <h2 className="text-3xl font-extrabold text-white">Settings</h2>
-        <p className="text-gray-500 text-sm mt-1">
-          Manage your workspace, privacy controls, and preferences.
-        </p>
-      </div>
+        {/* Page header */}
+        <div>
+          <h2 className={`text-3xl font-extrabold ${isDark ? "text-white" : "text-gray-900"}`}>Settings</h2>
+          <p className="text-gray-500 text-sm mt-1">
+            Manage your workspace, privacy controls, and preferences.
+          </p>
+        </div>
 
-      {/* 1. Appearance (🌟 主题与颜色控制区) */}
-      <SettingsSection
-        icon={Palette}
-        title="Appearance"
-        description="Customise how UniBudget Lab formats data and visual identity."
-      >
-        {/* Dark Mode Toggle */}
-        <ToggleRow
-          label="Dark Mode"
-          description="Toggle between light and dark themes."
-          enabled={isDark}
-          onChange={setIsDark}
-        />
-
-        {/* Primary Accent Color Picker */}
-        <div className="flex items-center justify-between p-3 bg-gray-950 border border-gray-800 rounded-xl">
-          <div>
-            <p className="text-sm font-semibold text-gray-300">Primary Accent</p>
-            <p className="text-xs text-gray-600 mt-0.5">Select your preferred colour theme.</p>
+        {/* 1. Appearance (🌟 白天黑夜 + 颜色选择) */}
+        <SettingsSection
+          icon={Palette}
+          title="Appearance"
+          description="Customise how UniBudget Lab formats data and visual identity."
+          theme={currentTheme}
+          isDark={isDark}
+        >
+          {/* 白天/黑夜开关 */}
+          <ToggleRow
+            label="Dark Mode"
+            description="Toggle between light and dark themes."
+            enabled={isDark}
+            onChange={setIsDark}
+            theme={currentTheme}
+            isDark={isDark}
+          />
+          
+          {/* 颜色选择器 */}
+          <div className={`flex items-center justify-between p-3 border rounded-xl transition-colors ${isDark ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
+            <div>
+              <p className={`text-sm font-semibold ${isDark ? "text-gray-300" : "text-gray-700"}`}>Primary Accent</p>
+              <p className={`text-xs mt-0.5 ${isDark ? "text-gray-600" : "text-gray-500"}`}>Select your preferred colour theme.</p>
+            </div>
+            <div className="flex gap-2">
+              {Object.keys(THEMES).map((key) => (
+                <button
+                  key={key}
+                  onClick={() => setThemeKey(key)}
+                  className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 ${THEMES[key].bg} ${
+                    themeKey === key ? `ring-2 ring-offset-2 ${isDark ? "ring-offset-gray-950" : "ring-offset-gray-50"} ${THEMES[key].ring}` : "opacity-80"
+                  }`}
+                >
+                  {themeKey === key && <CheckCircle className="w-4 h-4 text-white" />}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-2">
-            {Object.keys(THEMES).map((key) => (
-              <button
-                key={key}
-                onClick={() => setThemeKey(key)}
-                className={`w-7 h-7 rounded-full flex items-center justify-center transition-transform hover:scale-110 ${THEMES[key].bg} ${
-                  themeKey === key ? "ring-2 ring-offset-2 ring-offset-gray-950 ring-gray-400" : "opacity-80"
-                }`}
-              >
-                {themeKey === key && <CheckCircle className="w-4 h-4 text-white" />}
-              </button>
+
+          <div className={`flex items-center justify-between p-3 border rounded-xl transition-colors ${isDark ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
+            <div>
+              <p className={`text-sm font-semibold ${isDark ? "text-gray-300" : "text-gray-700"}`}>Base Currency</p>
+              <p className={`text-xs mt-0.5 ${isDark ? "text-gray-600" : "text-gray-500"}`}>Affects ledger and Monte Carlo outputs.</p>
+            </div>
+            <select
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              className={`border rounded-xl px-3 py-2 text-sm focus:outline-none transition-colors ${isDark ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-gray-300 text-gray-900"}`}
+            >
+              <option value="GBP">£ GBP — British Pound</option>
+              <option value="EUR">€ EUR — Euro</option>
+              <option value="USD">$ USD — US Dollar</option>
+            </select>
+          </div>
+        </SettingsSection>
+
+        {/* 2. Notifications */}
+        <SettingsSection
+          icon={Bell}
+          title="Notifications"
+          description="Configure how the Advisory Engine communicates with you."
+          theme={currentTheme}
+          isDark={isDark}
+        >
+          <ToggleRow
+            label="Bankruptcy Risk Alerts"
+            description="Alert when 12-month bankruptcy probability exceeds 40%."
+            enabled={notifyBankruptcy}
+            onChange={setNotifyBankruptcy}
+            theme={currentTheme}
+            isDark={isDark}
+          />
+          <ToggleRow
+            label="Weekly Ledger Summary"
+            description="Automated digest of your bookkeeping patterns."
+            enabled={notifyWeekly}
+            onChange={setNotifyWeekly}
+            theme={currentTheme}
+            isDark={isDark}
+          />
+        </SettingsSection>
+
+        {/* 3. Account */}
+        <SettingsSection
+          icon={User}
+          title="Account"
+          description="Your profile linked via OAuth 2.0."
+          theme={currentTheme}
+          isDark={isDark}
+        >
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Display Name</p>
+            {editingName ? (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className={`flex-1 border rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-colors ${currentTheme.border} focus:border-2 ${isDark ? "bg-gray-950 border-gray-800 text-white" : "bg-white border-gray-200 text-gray-900 shadow-sm"}`}
+                />
+                <button
+                  onClick={handleSaveName}
+                  className={`${currentTheme.bg} hover:brightness-110 text-white rounded-xl px-5 py-2.5 text-sm font-bold transition-colors`}
+                >
+                  Save
+                </button>
+              </div>
+            ) : (
+              <div className={`flex items-center justify-between border rounded-xl px-4 py-3 transition-colors ${isDark ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
+                <p className={`text-sm font-medium ${isDark ? "text-white" : "text-gray-900"}`}>{displayName}</p>
+                <button
+                  onClick={() => setEditingName(true)}
+                  className="text-xs font-bold text-gray-500 hover:text-gray-400 flex items-center gap-1 transition-colors"
+                >
+                  Edit <ChevronRight className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+            {nameSaved && (
+              <p className={`text-xs ${currentTheme.text} mt-1.5 flex items-center gap-1`}>
+                <CheckCircle className="w-3 h-3" /> Name updated.
+              </p>
+            )}
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Email</p>
+            <div className={`border rounded-xl px-4 py-3 opacity-60 transition-colors ${isDark ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
+              <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}>{email}</p>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">Managed by your OAuth provider.</p>
+          </div>
+
+          <button className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-400 transition-colors">
+            <LogOut className="w-4 h-4" />
+            Sign out
+          </button>
+        </SettingsSection>
+
+        {/* 4. Privacy & GDPR */}
+        <SettingsSection
+          icon={ShieldCheck}
+          title="Privacy & GDPR Compliance"
+          description="Your rights under UK GDPR. We collect only what is necessary."
+          theme={currentTheme}
+          isDark={isDark}
+        >
+          <div className={`border rounded-xl p-4 space-y-2 transition-colors ${isDark ? "bg-gray-950 border-gray-800" : "bg-gray-50 border-gray-200"}`}>
+            <p className={`text-xs font-semibold mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}>Data we collect</p>
+            {[
+              "Name and email from your OAuth provider",
+              "Financial scenarios you choose to save",
+              "Transaction records you manually enter",
+              "We never access real banking data",
+              "We never sell your data to third parties",
+            ].map((item) => (
+              <div key={item} className="flex items-start gap-2">
+                <ShieldCheck className={`w-3.5 h-3.5 ${currentTheme.text} mt-0.5 shrink-0`} />
+                <p className="text-xs text-gray-500">{item}</p>
+              </div>
             ))}
           </div>
-        </div>
 
-        {/* Base Currency */}
-        <div className="flex items-center justify-between p-3 bg-gray-950 border border-gray-800 rounded-xl">
-          <div>
-            <p className="text-sm font-semibold text-gray-300">Base Currency</p>
-            <p className="text-xs text-gray-600 mt-0.5">Affects ledger and Monte Carlo outputs.</p>
-          </div>
-          <select
-            value={currency}
-            onChange={(e) => setCurrency(e.target.value)}
-            className="bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-gray-500 transition-colors"
-          >
-            <option value="GBP">£ GBP — British Pound</option>
-            <option value="EUR">€ EUR — Euro</option>
-            <option value="USD">$ USD — US Dollar</option>
-          </select>
-        </div>
-      </SettingsSection>
-
-      {/* 2. Notifications */}
-      <SettingsSection
-        icon={Bell}
-        title="Notifications"
-        description="Configure how the Advisory Engine communicates with you."
-      >
-        <ToggleRow
-          label="Bankruptcy Risk Alerts"
-          description="Alert when 12-month bankruptcy probability exceeds 40%."
-          enabled={notifyBankruptcy}
-          onChange={setNotifyBankruptcy}
-        />
-        <ToggleRow
-          label="Weekly Ledger Summary"
-          description="Automated digest of your bookkeeping patterns."
-          enabled={notifyWeekly}
-          onChange={setNotifyWeekly}
-        />
-      </SettingsSection>
-
-      {/* 3. Account */}
-      <SettingsSection
-        icon={User}
-        title="Account"
-        description="Your profile linked via OAuth 2.0."
-      >
-        <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Display Name</p>
-          {editingName ? (
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                className={`flex-1 bg-gray-950 border border-gray-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none transition-colors ${theme.border} focus:border-2`}
-              />
-              <button
-                onClick={handleSaveName}
-                // 使用动态主题背景色
-                className={`${theme.bg} hover:opacity-90 text-white rounded-xl px-5 py-2.5 text-sm font-bold transition-colors`}
-              >
-                Save
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between bg-gray-950 border border-gray-800 rounded-xl px-4 py-3">
-              <p className="text-sm font-medium text-white">{displayName}</p>
-              <button
-                onClick={() => setEditingName(true)}
-                className="text-xs font-bold text-gray-500 hover:text-white flex items-center gap-1 transition-colors"
-              >
-                Edit <ChevronRight className="w-3 h-3" />
-              </button>
-            </div>
-          )}
-          {nameSaved && (
-            <p className="text-xs text-emerald-400 mt-1.5 flex items-center gap-1">
-              <CheckCircle className="w-3 h-3" /> Name updated.
+          <DangerButton
+            icon={Download}
+            label="Export My Data"
+            description="GDPR Art. 20 — Right to Data Portability."
+            buttonLabel="Export JSON"
+            onClick={handleExportData}
+            isDark={isDark}
+          />
+          {exportFlash && (
+            <p className={`text-xs ${currentTheme.text} flex items-center gap-1`}>
+              <CheckCircle className="w-3 h-3" /> Export downloaded.
             </p>
           )}
-        </div>
 
-        <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Email</p>
-          <div className="bg-gray-950 border border-gray-800 rounded-xl px-4 py-3 opacity-60">
-            <p className="text-sm text-gray-400">{email}</p>
+          <DangerButton
+            icon={Trash2}
+            label="Delete My Account"
+            description="GDPR Art. 17 — Right to Erasure. Clears all local data and signs you out."
+            buttonLabel="Delete Account"
+            onClick={handleDeleteAccount}
+            isDark={isDark}
+          />
+          {deleteFlash && (
+            <p className="text-xs text-rose-500 flex items-center gap-1">
+              <CheckCircle className="w-3 h-3" /> Data cleared. Redirecting to login...
+            </p>
+          )}
+
+          <p className={`text-xs leading-relaxed border-t pt-4 ${isDark ? "border-gray-800 text-gray-700" : "border-gray-200 text-gray-500"}`}>
+            UniBudget Lab complies with UK GDPR and the BCS Code of Conduct.
+            Results are probabilistic projections, not professional financial advice.
+          </p>
+        </SettingsSection>
+
+        {/* 5. About */}
+        <div className={`border rounded-2xl p-6 text-xs space-y-1.5 transition-colors ${isDark ? "bg-gray-900 border-gray-800 text-gray-600" : "bg-white border-gray-200 text-gray-500"}`}>
+          <p className={`font-bold mb-3 text-sm ${isDark ? "text-gray-400" : "text-gray-700"}`}>About UniBudget Lab</p>
+          <p><span className={isDark ? "text-gray-500" : "text-gray-400"}>Version:</span> 2.1.0</p>
+          <p><span className={isDark ? "text-gray-500" : "text-gray-400"}>Context:</span> COMP208 Group Project, University of Liverpool</p>
+          <p><span className={isDark ? "text-gray-500" : "text-gray-400"}>Stack:</span> React · Tailwind CSS · Chart.js · FastAPI · PostgreSQL</p>
+          <div className={`pt-3 mt-2 border-t ${isDark ? "border-gray-800" : "border-gray-200"}`}>
+            <p className={`mb-1.5 font-medium ${isDark ? "text-gray-500" : "text-gray-600"}`}>Architectural inspirations:</p>
+            <p>maybe-finance/maybe · firefly-iii/firefly-iii · actualbudget/actual · ghostfolio/ghostfolio</p>
           </div>
-          <p className="text-xs text-gray-700 mt-1">Managed by your OAuth provider.</p>
-        </div>
-
-        <button className="flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors">
-          <LogOut className="w-4 h-4" />
-          Sign out
-        </button>
-      </SettingsSection>
-
-      {/* 4. Privacy & GDPR */}
-      <SettingsSection
-        icon={ShieldCheck}
-        title="Privacy & GDPR Compliance"
-        description="Your rights under UK GDPR. We collect only what is necessary."
-      >
-        <div className="bg-gray-950 border border-gray-800 rounded-xl p-4 space-y-2">
-          <p className="text-xs font-semibold text-gray-400 mb-2">Data we collect</p>
-          {[
-            "Name and email from your OAuth provider",
-            "Financial scenarios you choose to save",
-            "Transaction records you manually enter",
-            "We never access real banking data",
-            "We never sell your data to third parties",
-          ].map((item) => (
-            <div key={item} className="flex items-start gap-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
-              <p className="text-xs text-gray-500">{item}</p>
-            </div>
-          ))}
-        </div>
-
-        <DangerButton
-          icon={Download}
-          label="Export My Data"
-          description="GDPR Art. 20 — Right to Data Portability."
-          buttonLabel="Export JSON"
-          onClick={handleExportData}
-        />
-        {exportFlash && (
-          <p className="text-xs text-emerald-400 flex items-center gap-1">
-            <CheckCircle className="w-3 h-3" /> Export downloaded.
+          <p className={`pt-3 mt-2 border-t leading-relaxed ${isDark ? "border-gray-800 text-gray-700" : "border-gray-200 text-gray-500"}`}>
+            Disclaimer: Results are probabilistic projections, not professional financial advice.
+            BCS Code of Conduct observed.
           </p>
-        )}
-
-        <DangerButton
-          icon={Trash2}
-          label="Delete My Account"
-          description="GDPR Art. 17 — Right to Erasure. Clears all local data and signs you out."
-          buttonLabel="Delete Account"
-          onClick={handleDeleteAccount}
-        />
-        {deleteFlash && (
-          <p className="text-xs text-rose-400 flex items-center gap-1">
-            <CheckCircle className="w-3 h-3" /> Data cleared. Redirecting to login...
-          </p>
-        )}
-
-        <p className="text-xs text-gray-700 leading-relaxed border-t border-gray-800 pt-4">
-          UniBudget Lab complies with UK GDPR and the BCS Code of Conduct.
-          Results are probabilistic projections, not professional financial advice.
-        </p>
-      </SettingsSection>
-
-      {/* 5. About */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 text-xs text-gray-600 space-y-1.5">
-        <p className="font-bold text-gray-400 mb-3 text-sm">About UniBudget Lab</p>
-        <p><span className="text-gray-500">Version:</span> 2.1.0</p>
-        <p><span className="text-gray-500">Context:</span> COMP208 Group Project, University of Liverpool</p>
-        <p><span className="text-gray-500">Stack:</span> React · Tailwind CSS · Chart.js · FastAPI · PostgreSQL</p>
-        <div className="pt-3 mt-2 border-t border-gray-800">
-          <p className="mb-1.5 text-gray-500 font-medium">Architectural inspirations:</p>
-          <p>maybe-finance/maybe · firefly-iii/firefly-iii · actualbudget/actual · ghostfolio/ghostfolio</p>
         </div>
-        <p className="pt-3 mt-2 border-t border-gray-800 text-gray-700 leading-relaxed">
-          Disclaimer: Results are probabilistic projections, not professional financial advice.
-          BCS Code of Conduct observed.
-        </p>
-      </div>
 
-    </main>
+      </main>
+    </div>
   )
 }
