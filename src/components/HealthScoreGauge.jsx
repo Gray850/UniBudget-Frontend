@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Doughnut } from "react-chartjs-2";
-import { ThemeContext } from "../ThemeContext";
+import { ThemeContext } from "../ThemeContext.jsx";
 
 export default function HealthScoreGauge({ score }) {
   const { isDark } = useContext(ThemeContext);
@@ -15,7 +15,7 @@ export default function HealthScoreGauge({ score }) {
 
   const { label, color } = getRating(score);
   
-  // 🌟 动态计算底部的三个维度评级
+  // 动态计算底部的三个维度评级 (显示评价等级)
   const liquidityStatus = score > 80 ? "Excellent" : score > 50 ? "Good" : "Fair";
   const spendingStatus = score > 60 ? "Good" : score > 30 ? "Fair" : "Warning";
   const safetyStatus = score > 75 ? "Excellent" : score > 40 ? "Good" : "At Risk";
@@ -42,7 +42,7 @@ export default function HealthScoreGauge({ score }) {
         </div>
       </div>
 
-      {/* 🌟 底部标签：现在直接显示评级词汇 */}
+      {/* 底部评价标签 */}
       <div className="mt-8 flex justify-center gap-4 px-2">
         {[
           { category: "Liquidity", status: liquidityStatus, color: "bg-emerald-500" },
