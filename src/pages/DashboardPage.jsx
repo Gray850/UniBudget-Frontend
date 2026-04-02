@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { Activity, TrendingUp, Sliders } from "lucide-react";
-import { ThemeContext } from "../App";
+import { ThemeContext } from "../ThemeContext";
 
 // 导入需要用到的小组件
 import ScenarioManager from "../components/ScenarioManager";

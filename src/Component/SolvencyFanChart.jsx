@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Line } from "react-chartjs-2";
-import { ThemeContext } from "../App";
+import { ThemeContext } from "../ThemeContext";
 
 export default function SolvencyFanChart({ days, p5, p50, p95 }) {
   const { isDark, theme } = useContext(ThemeContext);

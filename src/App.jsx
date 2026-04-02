@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext } from "react";
+import React, { useState, useEffect } from "react";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler } from "chart.js";
 
 // 导入拆分后的页面和组件
@@ -7,17 +7,11 @@ import Sidebar from "./components/Sidebar";
 import DashboardPage from "./pages/DashboardPage";
 import SettingsPage from "./pages/SettingsPage";
 
+// 🌟 导入分离出的 Context
+import { ThemeContext, THEMES } from "./ThemeContext";
+
 // 注册 Chart.js 插件
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler);
-
-// 导出主题上下文，供其他文件使用
-export const ThemeContext = createContext();
-
-const THEMES = {
-  indigo: { main: "indigo", bg: "bg-indigo-500", text: "text-indigo-500", border: "border-indigo-500", lightBg: "bg-indigo-500/10", hex: "rgba(99, 102, 241, 1)", hexLight: "rgba(99, 102, 241, 0.15)" },
-  emerald: { main: "emerald", bg: "bg-emerald-500", text: "text-emerald-500", border: "border-emerald-500", lightBg: "bg-emerald-500/10", hex: "rgba(16, 185, 129, 1)", hexLight: "rgba(16, 185, 129, 0.15)" },
-  rose: { main: "rose", bg: "bg-rose-500", text: "text-rose-500", border: "border-rose-500", lightBg: "bg-rose-500/10", hex: "rgba(244, 63, 94, 1)", hexLight: "rgba(244, 63, 94, 0.15)" },
-};
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

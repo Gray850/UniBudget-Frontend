@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { Save, FolderOpen, Download, CheckCircle, ChevronUp, ChevronDown } from "lucide-react";
-import { ThemeContext } from "../App";
+import { ThemeContext } from "../ThemeContext";
 
 export default function ScenarioManager({ currentValues, onLoad }) {
   const { isDark, theme } = useContext(ThemeContext);

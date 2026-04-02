@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Wallet, User, Lock } from "lucide-react";
-import { ThemeContext } from "../App";
+import { ThemeContext } from "../ThemeContext";
 
 export default function LoginPage({ onLogin }) {
   const { isDark, theme } = useContext(ThemeContext);

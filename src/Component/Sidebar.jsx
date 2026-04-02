@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { LayoutDashboard, BookOpen, Settings, LogOut, Wallet, ChevronLeft, ChevronRight } from "lucide-react";
-import { ThemeContext } from "../App";
+import { ThemeContext } from "../ThemeContext";
 
 export default function Sidebar({ currentPath, setCurrentPath, isCollapsed, setIsCollapsed, onLogout }) {
   const { isDark, theme } = useContext(ThemeContext);

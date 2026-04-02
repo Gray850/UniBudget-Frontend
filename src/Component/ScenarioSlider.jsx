@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { ThemeContext } from "../App";
+import { ThemeContext } from "../ThemeContext";
 
 export default function ScenarioSlider({ label, min, max, step = 1, value, onChange, unit = "£" }) {
   const { isDark, theme } = useContext(ThemeContext);

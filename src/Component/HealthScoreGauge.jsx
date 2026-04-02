@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Doughnut } from "react-chartjs-2";
-import { ThemeContext } from "../App";
+import { ThemeContext } from "../ThemeContext";
 
 export default function HealthScoreGauge({ score }) {
   const { isDark } = useContext(ThemeContext);

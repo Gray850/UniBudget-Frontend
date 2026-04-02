@@ -1,16 +1,9 @@
 import React, { useContext } from "react";
 import { Moon, Sun, Palette, CheckCircle } from "lucide-react";
-import { ThemeContext } from "../App";
+import { ThemeContext, THEMES } from "../ThemeContext";
 
 export default function SettingsPage() {
   const { isDark, setIsDark, themeKey, setThemeKey, theme } = useContext(ThemeContext);
-
-  // 由于我们要循环渲染主题颜色，所以在组件内重新定义一下颜色配置对象用于遍历
-  const availableThemes = {
-    indigo: { bg: "bg-indigo-500" },
-    emerald: { bg: "bg-emerald-500" },
-    rose: { bg: "bg-rose-500" }
-  };
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4">
@@ -44,11 +37,11 @@ export default function SettingsPage() {
             </div>
           </div>
           <div className="flex gap-3">
-            {Object.keys(availableThemes).map((key) => (
+            {Object.keys(THEMES).map((key) => (
               <button
                 key={key}
                 onClick={() => setThemeKey(key)}
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-110 ${availableThemes[key].bg} ${themeKey === key ? "ring-4 ring-offset-2 ring-gray-400 dark:ring-offset-gray-900" : "opacity-80"}`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-110 ${THEMES[key].bg} ${themeKey === key ? "ring-4 ring-offset-2 ring-gray-400 dark:ring-offset-gray-900" : "opacity-80"}`}
               >
                 {themeKey === key && <CheckCircle className="w-4 h-4 text-white" />}
               </button>
@@ -59,3 +52,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+
