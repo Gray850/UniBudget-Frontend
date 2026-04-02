@@ -5,18 +5,26 @@ import {
   Trash2, Download, LogOut, ChevronRight, CheckCircle, Moon, Sun
 } from "lucide-react";
 
-// ---------------------------------------------------------------------------
-// 🌟 内部主题定义 (修复了预览环境报错的问题)
-// ⚠️ 当你把这段代码复制到本地 VS Code 时，请把下面这几行删掉：
-// 并换回你原本的：import { ThemeContext, THEMES } from "../ThemeContext";
-// ---------------------------------------------------------------------------
+// ============================================================================
+// ⚠️⚠️⚠️ 极其重要的本地使用步骤 ⚠️⚠️⚠️
+// 为了实现你要求的“全站联动变色”，当你把这段代码粘贴到你的 VS Code 后，请执行以下两步：
+// 
+// 1. 删掉下面这行代码前面的双斜杠 (//)，让它恢复成正常的引入：
+// // import { ThemeContext, THEMES } from "../ThemeContext";
+//
+// 2. 删掉下面这个专门为了在线预览不报错而写的“临时区块”（第 19 行到第 28 行）。
+// ============================================================================
+
+// ⬇️ 临时区块开始 (在本地 VS Code 中请将这段完全删除) ⬇️
 const THEMES = {
   indigo: { bg: "bg-indigo-600", text: "text-indigo-500", border: "border-indigo-500", ring: "ring-indigo-500" },
   emerald: { bg: "bg-emerald-600", text: "text-emerald-500", border: "border-emerald-500", ring: "ring-emerald-500" },
   rose: { bg: "bg-rose-600", text: "text-rose-500", border: "border-rose-500", ring: "ring-rose-500" },
 };
-const ThemeContext = createContext();
-// ---------------------------------------------------------------------------
+const ThemeContext = createContext({
+  isDark: true, setIsDark: () => {}, themeKey: "indigo", setThemeKey: () => {}, theme: THEMES.indigo
+});
+// ⬆️ 临时区块结束 ⬆️
 
 // ---------------------------------------------------------------------------
 // 子组件 (支持主题与暗黑模式传入)
@@ -82,9 +90,9 @@ function DangerButton({ icon: Icon, label, description, buttonLabel, onClick, is
 }
 
 // ---------------------------------------------------------------------------
-// 主设置页面组件 (在你本地，这个就是你的 default export)
+// 主设置页面组件
 // ---------------------------------------------------------------------------
-export function SettingsPage() {
+export default function SettingsPage() {
   const { isDark, setIsDark, themeKey, setThemeKey, theme: currentTheme } = useContext(ThemeContext);
 
   const [displayName, setDisplayName] = useState("Owen Lin");
@@ -252,20 +260,5 @@ export function SettingsPage() {
 
       </main>
     </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// 🌟 为了让网页预览生效的包裹层 (提供全局 ThemeContext)
-// ---------------------------------------------------------------------------
-export default function App() {
-  const [themeKey, setThemeKey] = useState("indigo");
-  const [isDark, setIsDark] = useState(true);
-  const theme = THEMES[themeKey];
-
-  return (
-    <ThemeContext.Provider value={{ isDark, setIsDark, themeKey, setThemeKey, theme }}>
-      <SettingsPage />
-    </ThemeContext.Provider>
   );
 }
