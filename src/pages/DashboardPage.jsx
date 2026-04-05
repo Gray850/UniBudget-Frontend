@@ -413,7 +413,14 @@ export default function DashboardPage() {
           <div className={`border rounded-2xl p-6 shadow-xl transition-colors duration-300 ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}>
             <div className="flex items-center gap-3 mb-4">
               <BrainCircuit className={`w-5 h-5 ${currentTheme?.text || 'text-indigo-500'}`} />
-              <h3 className="text-base font-bold">Dynamic Advisory Insights</h3>
+            <Tooltip text="Scored out of 100: 50% based on your cash flow and financial runway, and 50% based on the Monte Carlo simulated bankruptcy risk.">
+  <div className="flex items-center gap-1.5 cursor-help">
+    <h3 className="text-base font-bold text-gray-900 dark:text-white">
+      Analysis Methodology
+    </h3>
+    <Info className="w-4 h-4 text-gray-400 hover:text-indigo-500 transition-colors" />
+  </div>
+</Tooltip>
             </div>
             <div className={`flex items-start gap-3 p-4 rounded-xl border text-sm leading-relaxed transition-colors duration-300 ${advisoryStyles[advisory.type]}`}>
               {advisoryIcons[advisory.type]}
