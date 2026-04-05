@@ -194,11 +194,11 @@ export default function DashboardPage() {
   const displayCurrency = currencySymbol || "£"
 
   const [config, setConfig] = useState({
-    current_balance:        4000,
-    monthly_income:         1500,
-    monthly_rent:           1150,
-    essential_spending:     540,
-    discretionary_spending: 450,
+    current_balance:        0,
+    monthly_income:         0,
+    monthly_rent:           0,
+    essential_spending:     0,
+    discretionary_spending: 0,
   })
 
   const [simData, setSimData]     = useState(null)
