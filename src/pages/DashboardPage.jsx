@@ -113,11 +113,16 @@ function calculateHealthScore(income, totalExpense, currentBalance, bankruptcyPr
   return Math.max(0, Math.min(100, Math.round(100 - riskRatio - (bankruptcyProbability * 0.5))))
 }
 
+
+// ---------------------------------------------------------------------------
+// 本地核心算法：加入了 Current Balance 缓冲机制 + 科学的蒙特卡洛波动
+// ---------------------------------------------------------------------------
 function mockSimulate(config) {
   const { monthly_income, monthly_rent, essential_spending, discretionary_spending, current_balance } = config
   const totalExpense = monthly_rent + essential_spending + discretionary_spending
   const monthlyBalance = monthly_income - totalExpense
   
+  // 💡 风险算法：融合 Current Balance
   let baseRisk = 0
   if (monthlyBalance < 0) {
     const monthsLeft = current_balance / Math.abs(monthlyBalance)
@@ -131,18 +136,26 @@ function mockSimulate(config) {
     baseRisk = Math.max(1, 15 - bufferMonths)
   }
 
-  const volatility = (totalExpense / (monthly_income || 1)) * 3
-  const bankruptcyProbability = Math.max(0, Math.min(100, Math.round(baseRisk + (Math.random() - 0.5) * volatility)))
+  // 🚨 修复点 1：控制破产概率的随机波动，只允许上下 5% 的微调，防止数值乱跳
+  const bankruptcyProbability = Math.max(0, Math.min(100, Math.round(baseRisk + (Math.random() - 0.5) * 10)))
 
   const p5 = [], p50 = [], p95 = []
   let balance = current_balance || 0
 
+  // 🚨 修复点 2：定义合理的金钱波动基数（比如每个月可能有相当于总支出 20% 的意外花销）
+  const monthlyShockBase = totalExpense * 0.20 + 100; 
+
   for (let i = 0; i < 12; i++) {
-    const shock = (Math.random() - 0.5) * volatility * 80
     balance += monthlyBalance
     p50.push(Math.round(balance))
-    p5.push(Math.round(balance - Math.abs(shock) * (i + 1) * 1.5))
-    p95.push(Math.round(balance + Math.abs(shock) * (i + 1) * 0.5))
+    
+    // 🚨 修复点 3：用平方根（Math.sqrt）让扇形喇叭口随着月份平滑优雅地展开
+    const uncertainty = monthlyShockBase * Math.sqrt(i + 1)
+    
+    // 悲观情况 (P5)：遇到意外多花钱
+    p5.push(Math.round(balance - uncertainty * 1.5))
+    // 乐观情况 (P95)：控制住了手，少花钱
+    p95.push(Math.round(balance + uncertainty * 0.8))
   }
 
   return {
