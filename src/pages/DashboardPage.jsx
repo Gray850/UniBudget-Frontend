@@ -97,29 +97,43 @@ function ScenarioSlider({ label, tooltip, value, unit, onChange, min = 0, max = 
 // ---------------------------------------------------------------------------
 // 本地核心算法：全新优化的加权健康分数 (Health Score)
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// 本地核心算法：全新优化的“悬崖式”健康分数 (Health Score)
+// ---------------------------------------------------------------------------
 function calculateHealthScore(income, totalExpense, currentBalance, bankruptcyProbability) {
-  // 1. Savings Ratio (权重 40分): 赚的越多，花得比例越低，分数越高
-  const savings = income - totalExpense;
-  const savingsScore = income > 0 ? Math.max(0, (savings / income) * 40) : 0;
+  const monthlyBalance = income - totalExpense;
+  let score = 100;
 
-  // 2. Liquidity Buffer (权重 30分): 存款够撑 6个月就是满分
-  const monthsCovered = totalExpense > 0 ? currentBalance / totalExpense : 10;
-  const liquidityScore = Math.min(30, (monthsCovered / 6) * 30);
+  if (monthlyBalance >= 0) {
+    // 🟢 状态 1：余额充足（每月都有盈余或收支平衡）
+    // 保持绝对绿色 (Excellent)，只根据破产风险微调扣分
+    score = 100 - (bankruptcyProbability * 0.2); 
+  } else {
+    // 🟡/🔴 状态 2 & 3：每月都在亏钱，开始消耗存款！
+    const monthlyDeficit = Math.abs(monthlyBalance);
+    const monthsLeft = currentBalance / monthlyDeficit; // 算算存款还能撑几个月
 
-  // 3. Safety Margin (权重 30分): 破产概率直接按比例扣分
-  const safetyScore = Math.max(0, 30 - (bankruptcyProbability * 0.3));
+    if (monthsLeft >= 12) {
+      // 🟢 还能撑一年以上：给个及格到良好的分数 (60-80分)
+      score = 60 + Math.min(20, (monthsLeft - 12) * 1.5);
+    } else if (monthsLeft > 0) {
+      // 🟡 余额往零走（撑不到一年）：触发悬崖效应，分数快速下跌！
+      // 随着存款变少，分数从 60分 迅速跌至 20分
+      score = 20 + (monthsLeft / 12) * 40; 
+    } else {
+      // 🔴 状态 4：余额低于零（也就是没存款了还透支）
+      // 快速变成红色 (At Risk)，分数在 0-20 之间挣扎
+      score = Math.max(0, 20 - (bankruptcyProbability * 0.5));
+    }
+  }
 
-  let finalScore = Math.round(savingsScore + liquidityScore + safetyScore);
-  
-  // 强制惩罚：如果破产风险超过 80%，分数不应该超过 20 分
-  if (bankruptcyProbability > 80) finalScore = Math.min(finalScore, 20);
-  
-  return Math.max(0, Math.min(100, finalScore));
+  // 终极惩罚：如果蒙特卡洛引擎算出来的破产概率极高 (> 60%)，直接把分数压死到红色警戒区
+  if (bankruptcyProbability > 60) {
+    score = Math.min(score, 35);
+  }
+
+  return Math.max(0, Math.min(100, Math.round(score)));
 }
-
-// ---------------------------------------------------------------------------
-// 本地核心算法：加入了 Current Balance 缓冲机制 + 科学的蒙特卡洛波动
-// ---------------------------------------------------------------------------
 function mockSimulate(config) {
   const { monthly_income, monthly_rent, essential_spending, discretionary_spending, current_balance } = config
   const totalExpense = monthly_rent + essential_spending + discretionary_spending
