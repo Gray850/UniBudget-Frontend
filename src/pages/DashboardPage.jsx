@@ -9,35 +9,20 @@ import {
 // ⚠️⚠️⚠️ 极其重要的本地使用步骤 ⚠️⚠️⚠️
 // 1. 在本地 VS Code 中，请取消下面这些 import 的注释（删掉行首的 //）：
 // ============================================================================
-// import ScenarioSlider from "../components/ScenarioSlider"
-// import SolvencyFanChart from "../components/SolvencyFanChart"
-// import HealthScoreGauge, { calculateHealthScore } from "../components/HealthScoreGauge"
-// import ExpensePieChart from "../components/ExpensePieChart"
-// import ScenarioManager from "../components/ScenarioManager"
-// import useDebounce from "../hooks/useDebounce"
-// import { loadTransactions, aggregateToSliderValues } from "../data/transactionStore"
-// import api from "../data/api"
-// import { ThemeContext } from "../ThemeContext"
+import ScenarioSlider from "../components/ScenarioSlider"
+import SolvencyFanChart from "../components/SolvencyFanChart"
+import HealthScoreGauge, { calculateHealthScore } from "../components/HealthScoreGauge"
+import ExpensePieChart from "../components/ExpensePieChart"
+import ScenarioManager from "../components/ScenarioManager"
+import useDebounce from "../hooks/useDebounce"
+import { loadTransactions, aggregateToSliderValues } from "../data/transactionStore"
+import api from "../data/api"
+import { ThemeContext } from "../ThemeContext"
 
 // ============================================================================
 // 2. 然后，请彻底删除下面的“临时预览区块”：
 // ============================================================================
 // ⬇️ 临时预览区块开始 ⬇️
-const ScenarioSlider = ({ label }) => <div className="p-2 text-xs text-gray-500 border rounded my-2">{label} Slider Mock</div>;
-const SolvencyFanChart = () => <div className="h-64 bg-gray-800/50 rounded-xl flex items-center justify-center text-gray-500">Chart Mock</div>;
-const HealthScoreGauge = () => <div className="h-40 bg-gray-800/50 rounded-xl flex items-center justify-center text-gray-500">Gauge Mock</div>;
-const calculateHealthScore = () => 85;
-const ExpensePieChart = () => <div className="h-40 bg-gray-800/50 rounded-xl flex items-center justify-center text-gray-500">Pie Chart Mock</div>;
-const ScenarioManager = () => <div className="p-4 bg-gray-800/50 rounded-xl text-xs text-gray-500">Scenario Manager Mock</div>;
-const useDebounce = (val) => val;
-const loadTransactions = () => [];
-const aggregateToSliderValues = () => ({ income: 4000, rent: 1150, food: 540, transport: 450 });
-const api = { post: async () => ({ data: {} }) };
-const ThemeContext = createContext({
-  isDark: true,
-  theme: { main: 'indigo', lightBg: 'bg-indigo-500/10', text: 'text-indigo-500' },
-  currencySymbol: '£'
-});
 // ⬆️ 临时预览区块结束 ⬆️
 
 // ---------------------------------------------------------------------------
