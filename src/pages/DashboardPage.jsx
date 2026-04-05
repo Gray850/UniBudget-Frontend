@@ -20,9 +20,10 @@ function Tooltip({ children, text }) {
   return (
     <div className="group relative flex items-center cursor-help w-fit">
       {children}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-2.5 text-xs text-white bg-gray-800 dark:bg-gray-700 rounded-lg shadow-xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 text-center leading-relaxed">
+      {/* 统一的高级感 Indigo Tooltip */}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-60 p-3 text-[11px] text-indigo-50 bg-indigo-950/90 backdrop-blur-md border border-indigo-500/20 rounded-xl shadow-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 z-50 text-center leading-relaxed">
         {text}
-        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800 dark:border-t-gray-700"></div>
+        <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-indigo-950/90"></div>
       </div>
     </div>
   );
