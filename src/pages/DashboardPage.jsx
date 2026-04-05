@@ -110,39 +110,45 @@ function ScenarioSlider({ label, tooltip, value, unit, onChange, min = 0, max = 
 // ---------------------------------------------------------------------------
 // 本地核心算法：幂函数断崖降级算法 (Power-Curve Cliff Decay)
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// 优化版：具备“安全保护区间”的断崖式算法
+// ---------------------------------------------------------------------------
 function calculateHealthScore(income, totalExpense, currentBalance, bankruptcyProbability) {
   const netFlow = income - totalExpense;
   let score = 100;
 
-  // 1. Runway 影响 (采用 0.4 次幂，实现极速坠落)
-  // 当 runway 接近 0 时，Math.pow(runway, 0.4) 的变化率极其惊人
+  // 1. Runway 影响 (保持你的断崖手感)
   let runwayFactor = 1; 
   if (netFlow < 0) {
     const runway = Math.max(0, currentBalance / Math.abs(netFlow));
-    const normalizedRunway = Math.min(runway, 12) / 12; // 缩放到 0-1 之间
+    // 只有撑不到 12 个月时才开始扣分，且 0.4 次幂确保末尾暴跌
+    const normalizedRunway = Math.min(runway, 12) / 12;
     runwayFactor = Math.pow(normalizedRunway, 0.4); 
   }
 
-  // 2. 风险影响 (采用指数衰减)
-  // e^(-risk/常数)，让风险超过 50% 后的扣分感呈倍数增加
-  const riskFactor = Math.exp(-bankruptcyProbability / 50);
+  // 2. 风险惩罚 (修正：加入 10% 的安全豁免区)
+  // 如果风险在 10% 以内，riskFactor 为 1（不扣分）
+  // 超过 10% 以后，才开始指数级扣分
+  const effectiveRisk = Math.max(0, bankruptcyProbability - 10);
+  const riskFactor = Math.exp(-effectiveRisk / 40);
 
-  // 初步合成基础分
+  // 3. 基础合成
   score = 100 * runwayFactor * riskFactor;
 
-  // 3. 负债“死亡螺旋”逻辑 (Sub-Zero Death Spiral)
+  // 4. 完美状态特赦：如果你不亏钱，且风险极低，直接给 100
+  if (netFlow >= 0 && bankruptcyProbability <= 12) {
+    score = 100;
+  }
+
+  // 5. 负债死亡螺旋 (保持严厉惩罚)
   if (currentBalance < 0) {
-    // 只要欠钱，基础分先强制“打骨折” (砍掉 40%)
     score *= 0.6;
-    
-    // 然后根据欠钱的绝对值，进行二次幂惩罚
-    // 每欠 1000 镑，惩罚力度就会非线性增加
     const debtBurden = Math.abs(currentBalance) / 1000;
     score -= Math.pow(debtBurden, 1.2) * 10;
   }
 
-  // 4. 兜底逻辑：如果完全没收入也没存款，那就是 0
-  if (income <= 0 && currentBalance <= 0) score = Math.min(score, 10);
+  // 6. 空白状态兜底
+  if (income <= 0 && totalExpense <= 0 && currentBalance <= 0) return 0;
 
   return Math.max(0, Math.min(100, Math.round(score)));
 }
