@@ -5,31 +5,17 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearSca
 // ⚠️⚠️⚠️ 极其重要的本地使用步骤 ⚠️⚠️⚠️
 // 1. 在本地 VS Code 中，请取消下面这些 import 的注释（删掉行首的 //）：
 // ============================================================================
-// import LoginPage from "./components/LoginPage";
-// import Sidebar from "./components/Sidebar";
-// import DashboardPage from "./pages/DashboardPage";
-// import SettingsPage from "./pages/SettingsPage";
-// import { ThemeContext, THEMES } from "./ThemeContext";
+import LoginPage from "./components/LoginPage";
+import Sidebar from "./components/Sidebar";
+import DashboardPage from "./pages/DashboardPage";
+import SettingsPage from "./pages/SettingsPage";
+import { ThemeContext, THEMES } from "./ThemeContext";
 
 // ============================================================================
 // 2. 然后，请彻底删除下面的“临时预览区块”：
 // ============================================================================
 // ⬇️ 临时预览区块开始 ⬇️
-const LoginPage = ({ onLogin }) => <div className="h-screen flex items-center justify-center"><button onClick={onLogin} className="bg-indigo-600 text-white px-4 py-2 rounded">Mock Login</button></div>;
-const Sidebar = ({ currentPath, setCurrentPath }) => (
-  <div className="w-64 bg-gray-900 text-white p-4">
-    <ul>
-      <li onClick={() => setCurrentPath('dashboard')} className="cursor-pointer mb-2">Dashboard</li>
-      <li onClick={() => setCurrentPath('settings')} className="cursor-pointer">Settings</li>
-    </ul>
-  </div>
-);
-const DashboardPage = () => <div className="p-8">Dashboard Content (Mock)</div>;
-const SettingsPage = () => <div className="p-8">Settings Content (Mock)</div>;
-const THEMES = {
-  indigo: { main: "indigo", bg: "bg-indigo-600", text: "text-indigo-400", border: "border-indigo-500", lightBg: "bg-indigo-500/10" },
-};
-const ThemeContext = createContext();
+
 // ⬆️ 临时预览区块结束 ⬆️
 
 
