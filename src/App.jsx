@@ -22,7 +22,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointE
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false);
   const [themeKey, setThemeKey] = useState("indigo");
   const [currentPath, setCurrentPath] = useState("dashboard");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
