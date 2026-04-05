@@ -20,41 +20,62 @@ import { ThemeContext } from "../ThemeContext"
 // 2. 然后，请彻底删除下面的“临时预览区块”：
 // ============================================================================
 // ⬇️ 临时预览区块开始 ⬇️
-
-  // 注意这里模拟器故意不传 currencySymbol 以测试防爆功能
 // ⬆️ 临时预览区块结束 ⬆️
 
 // ---------------------------------------------------------------------------
-// 本地核心算法：替代缺失的 API
+// 本地核心算法：加入了 Current Balance 缓冲机制
 // ---------------------------------------------------------------------------
-function calculateHealthScore(income, totalExpense, bankruptcyProbability) {
-  const riskRatio = income > 0 ? (totalExpense / income) * 40 : 100
+function calculateHealthScore(income, totalExpense, currentBalance, bankruptcyProbability) {
+  // 引入存款作为缓冲：把本金分摊到12个月里增强抗风险能力
+  const monthlyBuffer = income + (currentBalance / 12)
+  const riskRatio = monthlyBuffer > 0 ? (totalExpense / monthlyBuffer) * 35 : 100
   return Math.max(0, Math.min(100, Math.round(100 - riskRatio - (bankruptcyProbability * 0.2))))
 }
 
 function mockSimulate(config) {
   const { monthly_income, monthly_rent, essential_spending, discretionary_spending, current_balance } = config
-  const monthlyBalance = monthly_income - monthly_rent - essential_spending - discretionary_spending
   const totalExpense = monthly_rent + essential_spending + discretionary_spending
-  const expenseRatio = monthly_income > 0 ? totalExpense / monthly_income : 1
-  const volatility   = expenseRatio * 0.4
-  const rawRisk      = Math.max(0, Math.min(1, expenseRatio - 0.3 + volatility * Math.random()))
-  const bankruptcyProbability = Math.round(rawRisk * 100)
+  const monthlyBalance = monthly_income - totalExpense
+  
+  // 💡 全新风险算法：完美融合 Current Balance (初始存款)
+  let baseRisk = 0
+  if (monthlyBalance < 0) {
+    // 亏钱状态：算一下存款还能撑几个月 (Runway)
+    const monthsLeft = current_balance / Math.abs(monthlyBalance)
+    if (monthsLeft < 12) {
+      // 12个月内就会花光存款，风险飙升！(刚够撑12个月是25%风险，马上破产是95%)
+      baseRisk = 95 - (monthsLeft / 12) * 70
+    } else {
+      // 存款够厚，能撑一年以上，风险很低
+      baseRisk = Math.max(5, 25 - (monthsLeft - 12))
+    }
+  } else {
+    // 赚钱状态：看存款抗压能力
+    const bufferMonths = totalExpense > 0 ? current_balance / totalExpense : 10
+    baseRisk = Math.max(1, 15 - bufferMonths) // 存款越多，风险越逼近 1%
+  }
+
+  // 增加蒙特卡洛模拟的随机波动
+  const volatility = (totalExpense / (monthly_income || 1)) * 3
+  const bankruptcyProbability = Math.max(0, Math.min(100, Math.round(baseRisk + (Math.random() - 0.5) * volatility)))
 
   const p5 = [], p50 = [], p95 = []
   let balance = current_balance || 0
 
   for (let i = 0; i < 12; i++) {
-    const shock = (Math.random() - 0.5) * volatility * monthly_income
+    // 模拟每月的突发支出
+    const shock = (Math.random() - 0.5) * volatility * 80
     balance += monthlyBalance
     p50.push(Math.round(balance))
-    p5.push(Math.round(balance  - Math.abs(shock) * (i + 1) * 0.8))
+    // 悲观预测 (遇到突发大额支出)
+    p5.push(Math.round(balance - Math.abs(shock) * (i + 1) * 1.5))
+    // 乐观预测
     p95.push(Math.round(balance + Math.abs(shock) * (i + 1) * 0.5))
   }
 
   return {
     bankruptcy_probability: bankruptcyProbability,
-    health_score: calculateHealthScore(monthly_income, totalExpense, bankruptcyProbability),
+    health_score: calculateHealthScore(monthly_income, totalExpense, current_balance, bankruptcyProbability),
     days: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
     p5, p50, p95,
   }
@@ -68,15 +89,15 @@ function getAdvisory(simData, config, displayCurrency) {
 
   const { bankruptcy_probability, p5 } = simData
   const finalP5 = p5?.[p5.length - 1] ?? 0
-  const { discretionary_spending, monthly_income } = config
+  const { discretionary_spending, monthly_income, current_balance } = config
 
   if (bankruptcy_probability >= 60 || finalP5 < 0) {
     return {
       type: "danger",
       text: `Critical: ${bankruptcy_probability}% bankruptcy probability detected.\n` +
-        (discretionary_spending > monthly_income * 0.1
-          ? `Discretionary spending (${displayCurrency}${discretionary_spending}) is high relative to income. Reduce variable costs immediately.`
-          : "Essential costs may cause bankruptcy under stress. Consider cheaper housing or additional income sources."),
+        (current_balance < monthly_income
+          ? `Your cash reserves are dangerously low. Reduce discretionary spending (${displayCurrency}${discretionary_spending}) immediately.`
+          : "You are burning through your savings too fast. Consider cheaper housing or additional income sources."),
     }
   }
   if (bankruptcy_probability >= 30) {
@@ -85,15 +106,15 @@ function getAdvisory(simData, config, displayCurrency) {
       text: `Warning: Elevated risk at ${bankruptcy_probability}%.\nKeep monitoring discretionary spending and maintain an emergency fund of at least 3 months' expenses.`,
     }
   }
-  if (finalP5 > 1000 && discretionary_spending < 100) {
+  if (finalP5 > current_balance && discretionary_spending < 300) {
     return {
       type: "success",
-      text: "Financial position looks stable. Low discretionary spending and a positive P5 outlook. Consider allocating surplus to savings or investments.",
+      text: "Financial position is growing stronger. Your positive cash flow is building your reserves. Consider allocating surplus to long-term savings.",
     }
   }
   return {
     type: "info",
-    text: "Financial outlook is moderate. Maintain current spending habits and review monthly for any drift in variable costs.",
+    text: "Financial outlook is stable. Your current balance provides a good buffer. Maintain your current spending habits.",
   }
 }
 
@@ -269,7 +290,7 @@ export default function DashboardPage() {
         <div className="xl:col-span-8 space-y-6">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <HealthScoreGauge score={simData?.health_score ?? calculateHealthScore(config.monthly_income, totalExpense, 50)} />
+            <HealthScoreGauge score={simData?.health_score ?? calculateHealthScore(config.monthly_income, totalExpense, config.current_balance, 50)} />
             <ExpensePieChart data={{ rent: config.monthly_rent, food: config.essential_spending, transport: config.discretionary_spending }} />
           </div>
 
