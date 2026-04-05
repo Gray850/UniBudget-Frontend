@@ -326,7 +326,6 @@ export default function SettingsPage() {
             Results are probabilistic projections, not professional financial advice.
           </p>
         </SettingsSection>
-
         {/* 4. 关于项目 */}
         <div className={`border rounded-2xl p-6 text-xs space-y-1.5 transition-colors duration-300 ${isDark ? "bg-gray-900 border-gray-800 text-gray-600" : "bg-white border-gray-200 text-gray-500"}`}>
           <p className={`font-bold mb-3 text-sm ${isDark ? "text-gray-400" : "text-gray-700"}`}>About UniBudget Lab</p>
