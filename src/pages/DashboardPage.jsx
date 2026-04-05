@@ -31,14 +31,18 @@ function Tooltip({ children, text }) {
 // ===========================================================================
 // 🌟 带有数字输入框且具备“进度颜色”效果的滑块组件
 // ===========================================================================
+// ===========================================================================
+// 🌟 带有数字输入框且具备“进度颜色”效果的滑块组件
+// ===========================================================================
 function ScenarioSlider({ label, tooltip, value, unit, onChange, min = 0, max = 10000, step = 100, color = "indigo" }) {
+  // 🎨 优化点 1：加深了亮色模式下的文字颜色 (把 500 改成了 600)，白底上更清晰！
   const colorMap = {
-    teal: { text: "text-teal-500", hex: "#14b8a6" },
-    emerald: { text: "text-emerald-500", hex: "#10b981" },
-    rose: { text: "text-rose-500", hex: "#f43f5e" },
-    amber: { text: "text-amber-500", hex: "#f59e0b" },
-    purple: { text: "text-purple-500", hex: "#a855f7" },
-    indigo: { text: "text-indigo-500", hex: "#6366f1" }
+    teal: { text: "text-teal-600 dark:text-teal-400", hex: "#14b8a6" },
+    emerald: { text: "text-emerald-600 dark:text-emerald-400", hex: "#10b981" },
+    rose: { text: "text-rose-600 dark:text-rose-400", hex: "#f43f5e" },
+    amber: { text: "text-amber-600 dark:text-amber-400", hex: "#f59e0b" },
+    purple: { text: "text-purple-600 dark:text-purple-400", hex: "#a855f7" },
+    indigo: { text: "text-indigo-600 dark:text-indigo-400", hex: "#6366f1" }
   };
 
   const currentColor = colorMap[color] || colorMap.indigo;
@@ -61,7 +65,8 @@ function ScenarioSlider({ label, tooltip, value, unit, onChange, min = 0, max = 
           </label>
         </Tooltip>
 
-        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800/50 px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 focus-within:ring-2 focus-within:ring-gray-400 transition-all">
+        {/* 🎨 优化点 2：去掉了 bg-gray-100，换成了 bg-white，加了 shadow-sm 阴影 */}
+        <div className="flex items-center gap-1 bg-white dark:bg-gray-800 px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/30 transition-all">
           <span className="text-sm font-bold text-gray-400">{unit}</span>
           <input
             type="number"
