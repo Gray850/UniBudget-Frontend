@@ -20,9 +20,12 @@ import { ThemeContext } from "../ThemeContext"
 // 2. 然后，请彻底删除下面的“临时预览区块”：
 // ============================================================================
 // ⬇️ 临时预览区块开始 ⬇️
+
+  // 注意这里模拟器故意不传 currencySymbol 以测试防爆功能
 // ⬆️ 临时预览区块结束 ⬆️
+
 // ---------------------------------------------------------------------------
-// 本地核心算法：替代你缺失的 HealthScoreGauge 导出和 API
+// 本地核心算法：替代缺失的 API
 // ---------------------------------------------------------------------------
 function calculateHealthScore(income, totalExpense, bankruptcyProbability) {
   const riskRatio = income > 0 ? (totalExpense / income) * 40 : 100
@@ -60,7 +63,7 @@ function mockSimulate(config) {
 // ---------------------------------------------------------------------------
 // AI 建议引擎
 // ---------------------------------------------------------------------------
-function getAdvisory(simData, config, currencySymbol) {
+function getAdvisory(simData, config, displayCurrency) {
   if (!simData) return { text: "Awaiting simulation results...", type: "info" }
 
   const { bankruptcy_probability, p5 } = simData
@@ -72,7 +75,7 @@ function getAdvisory(simData, config, currencySymbol) {
       type: "danger",
       text: `Critical: ${bankruptcy_probability}% bankruptcy probability detected.\n` +
         (discretionary_spending > monthly_income * 0.1
-          ? `Discretionary spending (${currencySymbol}${discretionary_spending}) is high relative to income. Reduce variable costs immediately.`
+          ? `Discretionary spending (${displayCurrency}${discretionary_spending}) is high relative to income. Reduce variable costs immediately.`
           : "Essential costs may cause bankruptcy under stress. Consider cheaper housing or additional income sources."),
     }
   }
@@ -100,6 +103,9 @@ function getAdvisory(simData, config, currencySymbol) {
 export default function DashboardPage() {
   // 🌟 接管全局状态
   const { isDark, theme: currentTheme, currencySymbol } = useContext(ThemeContext)
+  
+  // 🛡️ 防爆保护：如果全局状态里没有给符号，默认使用 £，绝不显示 undefined！
+  const displayCurrency = currencySymbol || "£"
 
   const [config, setConfig] = useState({
     current_balance:        4000,
@@ -112,20 +118,21 @@ export default function DashboardPage() {
   const [simData, setSimData]     = useState(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  // 监听参数变化，触发本地模拟（替代了报错的 useDebounce 和 api）
+  // 监听参数变化，触发本地模拟
   useEffect(() => {
     setIsLoading(true)
     const timer = setTimeout(() => {
       setSimData(mockSimulate(config))
       setIsLoading(false)
-    }, 400) // 模拟网络延迟让动效更好看
+    }, 400) 
     return () => clearTimeout(timer)
   }, [config])
 
   const totalExpense = config.monthly_rent + config.essential_spending + config.discretionary_spending
   const balance      = config.monthly_income - totalExpense
 
-  const advisory = getAdvisory(simData, config, currencySymbol)
+  // 传入安全的防爆符号
+  const advisory = getAdvisory(simData, config, displayCurrency)
 
   // 动态主题配色适配
   const advisoryStyles = {
@@ -190,17 +197,17 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* KPI 数据栏 */}
+      {/* KPI 数据栏：接入安全的货币符号 */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           {
             label: "Monthly Balance",
-            value: `${currencySymbol}${balance.toLocaleString()}`,
+            value: `${displayCurrency}${balance.toLocaleString()}`,
             color: balance >= 0 ? (isDark ? "text-emerald-400" : "text-emerald-600") : (isDark ? "text-rose-400" : "text-rose-600"),
           },
           {
             label: "Total Expenses",
-            value: `${currencySymbol}${totalExpense.toLocaleString()}`,
+            value: `${displayCurrency}${totalExpense.toLocaleString()}`,
             color: isDark ? "text-rose-400" : "text-rose-600",
           },
           {
@@ -234,7 +241,7 @@ export default function DashboardPage() {
       {/* 主面板内容 */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
 
-        {/* 左侧：滑块控制区 */}
+        {/* 左侧：滑块控制区 (传入安全的防爆符号) */}
         <aside className="xl:col-span-4 space-y-6">
           <div className={`border rounded-2xl p-6 shadow-xl transition-colors duration-300 ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}>
             <div className="flex items-center justify-between mb-1">
@@ -248,11 +255,11 @@ export default function DashboardPage() {
               Drag sliders to forecast your future solvency.
             </p>
 
-            <ScenarioSlider label="Current Balance" unit={currencySymbol} min={0} max={10000} step={100} value={config.current_balance} onChange={(v) => setConfig((p) => ({ ...p, current_balance: v }))} color="teal" />
-            <ScenarioSlider label="Monthly Income" unit={currencySymbol} min={0} max={5000} step={50} value={config.monthly_income} onChange={(v) => setConfig((p) => ({ ...p, monthly_income: v }))} color="emerald" />
-            <ScenarioSlider label="Rent & Bills" unit={currencySymbol} min={0} max={3000} step={25} value={config.monthly_rent} onChange={(v) => setConfig((p) => ({ ...p, monthly_rent: v }))} color="rose" />
-            <ScenarioSlider label="Essential Spending" unit={currencySymbol} min={0} max={2000} step={25} value={config.essential_spending} onChange={(v) => setConfig((p) => ({ ...p, essential_spending: v }))} color="amber" />
-            <ScenarioSlider label="Discretionary Spending" unit={currencySymbol} min={0} max={2000} step={25} value={config.discretionary_spending} onChange={(v) => setConfig((p) => ({ ...p, discretionary_spending: v }))} color="purple" />
+            <ScenarioSlider label="Current Balance" unit={displayCurrency} min={0} max={10000} step={100} value={config.current_balance} onChange={(v) => setConfig((p) => ({ ...p, current_balance: v }))} color="teal" />
+            <ScenarioSlider label="Monthly Income" unit={displayCurrency} min={0} max={5000} step={50} value={config.monthly_income} onChange={(v) => setConfig((p) => ({ ...p, monthly_income: v }))} color="emerald" />
+            <ScenarioSlider label="Rent & Bills" unit={displayCurrency} min={0} max={3000} step={25} value={config.monthly_rent} onChange={(v) => setConfig((p) => ({ ...p, monthly_rent: v }))} color="rose" />
+            <ScenarioSlider label="Essential Spending" unit={displayCurrency} min={0} max={2000} step={25} value={config.essential_spending} onChange={(v) => setConfig((p) => ({ ...p, essential_spending: v }))} color="amber" />
+            <ScenarioSlider label="Discretionary Spending" unit={displayCurrency} min={0} max={2000} step={25} value={config.discretionary_spending} onChange={(v) => setConfig((p) => ({ ...p, discretionary_spending: v }))} color="purple" />
           </div>
 
           <ScenarioManager currentValues={config} onLoad={setConfig} />
