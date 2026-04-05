@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useContext, createContext } from "react"
 import {
   LayoutDashboard, TrendingUp, AlertTriangle,
-  BrainCircuit, Loader2, Database, Sliders
+  BrainCircuit, Loader2, Database, Sliders, Info
 } from "lucide-react"
 
 // ============================================================================
@@ -24,6 +24,27 @@ import { ThemeContext } from "../ThemeContext"
 // 🌟 内置的滑块组件（带手动输入框）
 // ---------------------------------------------------------------------------
 // 🌟 带有数字输入框且具备“进度颜色”效果的滑块组件
+
+// 🌟 纯手工打造的悬浮提示框组件
+function Tooltip({ children, text }) {
+  // 如果没有传 text，就直接返回原来的元素，不加悬浮框
+  if (!text) return children; 
+
+  return (
+    <div className="group relative flex items-center cursor-help w-fit">
+      {children}
+      {/* 这是一个绝对定位的黑色小框框，默认是透明的 (opacity-0)，鼠标移入 group 时变成不透明 (group-hover:opacity-100) */}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-2.5 text-xs text-white bg-gray-800 dark:bg-gray-700 rounded-lg shadow-xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 text-center leading-relaxed">
+        {text}
+        {/* 这里是用 CSS 画的一个倒三角小尾巴 */}
+        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800 dark:border-t-gray-700"></div>
+      </div>
+    </div>
+  );
+}
+
+
+
 function ScenarioSlider({ label, value, unit, onChange, min = 0, max = 10000, step = 100, color = "indigo" }) {
   // 颜色映射表：用于输入框文字颜色和进度条填充色
   const colorMap = {
@@ -304,17 +325,25 @@ export default function DashboardPage() {
           },
           {
             label: "Health Score",
-            value: simData ? `${simData.health_score}/100` : "--",
+  tooltip: "Scored out of 100. Points are deducted if expenses exceed your buffer, with heavy penalties for high bankruptcy risk.", // 👈 English tooltip!
+  value: simData ? `${simData.health_score}/100` : "--",
             color: !simData                   ? "text-gray-500"
                  : simData.health_score >= 70 ? (isDark ? "text-emerald-400" : "text-emerald-600")
                  : simData.health_score >= 40 ? (isDark ? "text-amber-400" : "text-amber-600")
                  : (isDark ? "text-rose-400" : "text-rose-600"),
           },
-        ].map((kpi) => (
+       ].map((kpi) => (
           <div key={kpi.label} className={`border rounded-2xl p-5 shadow-xl transition-colors duration-300 ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}>
-            <p className={`text-xs font-semibold uppercase tracking-wider mb-2 ${isDark ? "text-gray-500" : "text-gray-500"}`}>
-              {kpi.label}
-            </p>
+            
+            {/* 👇 替换的部分在这里：用 Tooltip 把标题包起来，并加上 Info 图标 */}
+            <Tooltip text={kpi.tooltip}>
+              <p className={`flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider mb-2 cursor-help ${isDark ? "text-gray-500" : "text-gray-500"}`}>
+                {kpi.label}
+                {kpi.tooltip && <Info className="w-3.5 h-3.5 opacity-60 hover:text-indigo-500 transition-colors" />}
+              </p>
+            </Tooltip>
+            {/* 👆 替换结束 */}
+
             <p className={`text-2xl font-extrabold ${kpi.color} ${isLoading ? "opacity-40" : ""} transition-opacity`}>
               {kpi.value}
             </p>
