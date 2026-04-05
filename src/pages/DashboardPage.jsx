@@ -34,8 +34,10 @@ function Tooltip({ children, text }) {
 // ===========================================================================
 // 🌟 带有数字输入框且具备“进度颜色”效果的滑块组件
 // ===========================================================================
+// ===========================================================================
+// 🌟 纯白高对比度版滑块组件（带手动输入框）
+// ===========================================================================
 function ScenarioSlider({ label, tooltip, value, unit, onChange, min = 0, max = 10000, step = 100, color = "indigo" }) {
-  // 🎨 优化点 1：加深了亮色模式下的文字颜色 (把 500 改成了 600)，白底上更清晰！
   const colorMap = {
     teal: { text: "text-teal-600 dark:text-teal-400", hex: "#14b8a6" },
     emerald: { text: "text-emerald-600 dark:text-emerald-400", hex: "#10b981" },
@@ -65,8 +67,8 @@ function ScenarioSlider({ label, tooltip, value, unit, onChange, min = 0, max = 
           </label>
         </Tooltip>
 
-        {/* 🎨 优化点 2：去掉了 bg-gray-100，换成了 bg-white，加了 shadow-sm 阴影 */}
-        <div className="flex items-center gap-1 bg-white dark:bg-gray-800 px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/30 transition-all">
+        {/* 🎨 重点修改：bg-white + border-gray-300 + shadow-sm */}
+        <div className="flex items-center gap-1 bg-white dark:bg-gray-800 px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
           <span className="text-sm font-bold text-gray-400">{unit}</span>
           <input
             type="number"
