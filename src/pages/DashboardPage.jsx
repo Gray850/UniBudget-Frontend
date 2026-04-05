@@ -100,39 +100,44 @@ function ScenarioSlider({ label, tooltip, value, unit, onChange, min = 0, max = 
 // ---------------------------------------------------------------------------
 // 本地核心算法：全新优化的“悬崖式”健康分数 (Health Score)
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// 本地核心算法：结合概率与生存周期的“平滑降级”健康分数 (Health Score)
+// ---------------------------------------------------------------------------
 function calculateHealthScore(income, totalExpense, currentBalance, bankruptcyProbability) {
   const monthlyBalance = income - totalExpense;
-  let score = 100;
-
+  
+  // 🟢 维度 1：现金流与生存周期 (满分 50 分)
+  let cashFlowScore = 50;
   if (monthlyBalance >= 0) {
-    // 🟢 状态 1：余额充足（每月都有盈余或收支平衡）
-    // 保持绝对绿色 (Excellent)，只根据破产风险微调扣分
-    score = 100 - (bankruptcyProbability * 0.2); 
+    // 如果赚钱或收支平衡，这部分直接拿满分
+    cashFlowScore = 50;
   } else {
-    // 🟡/🔴 状态 2 & 3：每月都在亏钱，开始消耗存款！
-    const monthlyDeficit = Math.abs(monthlyBalance);
-    const monthsLeft = currentBalance / monthlyDeficit; // 算算存款还能撑几个月
-
+    // 如果每个月都在亏钱，算算存款还能撑几个月 (Runway)
+    const monthsLeft = currentBalance / Math.abs(monthlyBalance);
+    
     if (monthsLeft >= 12) {
-      // 🟢 还能撑一年以上：给个及格到良好的分数 (60-80分)
-      score = 60 + Math.min(20, (monthsLeft - 12) * 1.5);
-    } else if (monthsLeft > 0) {
-      // 🟡 余额往零走（撑不到一年）：触发悬崖效应，分数快速下跌！
-      // 随着存款变少，分数从 60分 迅速跌至 20分
-      score = 20 + (monthsLeft / 12) * 40; 
+      // 能撑一年以上，依然能拿 40~50 的高分
+      cashFlowScore = 40 + Math.min(10, (monthsLeft - 12) * 1);
     } else {
-      // 🔴 状态 4：余额低于零（也就是没存款了还透支）
-      // 快速变成红色 (At Risk)，分数在 0-20 之间挣扎
-      score = Math.max(0, 20 - (bankruptcyProbability * 0.5));
+      // 撑不到一年，分数随着月份减少【平滑】下降 (0~40分)
+      cashFlowScore = (monthsLeft / 12) * 40; 
     }
   }
 
-  // 终极惩罚：如果蒙特卡洛引擎算出来的破产概率极高 (> 60%)，直接把分数压死到红色警戒区
-  if (bankruptcyProbability > 60) {
-    score = Math.min(score, 35);
+  // 🔵 维度 2：蒙特卡洛破产概率惩罚 (满分 50 分)
+  // 概率 0% -> 拿满 50 分；概率 100% -> 拿 0 分
+  const riskScore = 50 - (bankruptcyProbability / 100) * 50;
+
+  // 综合得分
+  let score = Math.round(cashFlowScore + riskScore);
+
+  // 🔴 破产底线惩罚：如果余额已经小于 0（负债状态），给予强制扣分，确保它是红色
+  if (currentBalance < 0) {
+    score -= 30;
   }
 
-  return Math.max(0, Math.min(100, Math.round(score)));
+  // 限制分数在 0 - 100 之间
+  return Math.max(0, Math.min(100, score));
 }
 function mockSimulate(config) {
   const { monthly_income, monthly_rent, essential_spending, discretionary_spending, current_balance } = config
