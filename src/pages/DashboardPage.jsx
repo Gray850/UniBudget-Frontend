@@ -9,7 +9,6 @@ import {
 // ⚠️⚠️⚠️ 极其重要的本地使用步骤 ⚠️⚠️⚠️
 // 1. 在本地 VS Code 中，请取消下面这些 import 的注释（删掉行首的 //）：
 // ============================================================================
-import ScenarioSlider from "../components/ScenarioSlider"
 import SolvencyFanChart from "../components/SolvencyFanChart"
 import HealthScoreGauge from "../components/HealthScoreGauge"
 import ExpensePieChart from "../components/ExpensePieChart"
