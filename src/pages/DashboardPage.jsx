@@ -104,41 +104,41 @@ function ScenarioSlider({ label, tooltip, value, unit, onChange, min = 0, max = 
 // ---------------------------------------------------------------------------
 // 本地核心算法：结合概率与生存周期的“平滑降级”健康分数 (Health Score)
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// 本地核心算法：对数加速降级算法 (Logarithmic Runway Decay)
+// ---------------------------------------------------------------------------
 function calculateHealthScore(income, totalExpense, currentBalance, bankruptcyProbability) {
-  const monthlyBalance = income - totalExpense;
+  const netFlow = income - totalExpense;
   
-  // 🟢 维度 1：现金流与生存周期 (满分 50 分)
-  let cashFlowScore = 50;
-  if (monthlyBalance >= 0) {
-    // 如果赚钱或收支平衡，这部分直接拿满分
-    cashFlowScore = 50;
-  } else {
-    // 如果每个月都在亏钱，算算存款还能撑几个月 (Runway)
-    const monthsLeft = currentBalance / Math.abs(monthlyBalance);
+  // 1. Runway Score (权重 50分)
+  let runwayScore = 50;
+  
+  if (netFlow < 0) {
+    const runway = Math.max(0, currentBalance / Math.abs(netFlow));
     
-    if (monthsLeft >= 12) {
-      // 能撑一年以上，依然能拿 40~50 的高分
-      cashFlowScore = 40 + Math.min(10, (monthsLeft - 12) * 1);
-    } else {
-      // 撑不到一年，分数随着月份减少【平滑】下降 (0~40分)
-      cashFlowScore = (monthsLeft / 12) * 40; 
-    }
+    // 💡 引入对数逻辑：ln(runway + 1) / ln(12 + 1)
+    // 这样当 runway 从 12 降到 0 时，分数下降的速度会越来越快
+    // 这种曲线比线性下降更符合“存款越少越焦虑”的心理
+    const normalizedRunway = Math.min(runway, 12);
+    runwayScore = (Math.log1p(normalizedRunway) / Math.log1p(12)) * 50;
   }
 
-  // 🔵 维度 2：蒙特卡洛破产概率惩罚 (满分 50 分)
-  // 概率 0% -> 拿满 50 分；概率 100% -> 拿 0 分
+  // 2. Risk Penalty (权重 50分)
+  // 保持线性惩罚，或者也可以微调
   const riskScore = 50 - (bankruptcyProbability / 100) * 50;
 
-  // 综合得分
-  let score = Math.round(cashFlowScore + riskScore);
+  let totalScore = runwayScore + riskScore;
 
-  // 🔴 破产底线惩罚：如果余额已经小于 0（负债状态），给予强制扣分，确保它是红色
+  // 3. 负债加速惩罚 (Sub-Zero Penalty)
+  // 当余额小于 0 时，我们使用平方根函数加速惩罚，让分数迅速跌向个位数
   if (currentBalance < 0) {
-    score -= 30;
+    const debtRatio = Math.abs(currentBalance / (income || 1000));
+    // 只要余额为负，立刻额外扣除至少 20 分，并随负债程度加速扣分
+    totalScore -= (Math.sqrt(debtRatio) * 15 + 20);
   }
 
-  // 限制分数在 0 - 100 之间
-  return Math.max(0, Math.min(100, score));
+  // 最终处理
+  return Math.max(0, Math.min(100, Math.round(totalScore)));
 }
 function mockSimulate(config) {
   const { monthly_income, monthly_rent, essential_spending, discretionary_spending, current_balance } = config
