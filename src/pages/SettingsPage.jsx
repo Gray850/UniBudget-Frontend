@@ -1,6 +1,6 @@
 import React, { useState, useContext, createContext } from "react";
 import {
-  User, ShieldCheck, Bell, Palette,
+  User, ShieldCheck, Palette,
   Trash2, Download, LogOut, ChevronRight, CheckCircle, Coins
 } from "lucide-react";
 
@@ -101,9 +101,6 @@ export default function SettingsPage() {
   const [email] = useState("sgylin22@liverpool.ac.uk");
   const [editingName, setEditingName] = useState(false);
   const [nameSaved, setNameSaved] = useState(false);
-
-  const [notifyBankruptcy, setNotifyBankruptcy] = useState(true);
-  const [notifyWeekly, setNotifyWeekly]         = useState(false);
 
   const [exportFlash, setExportFlash] = useState(false);
   const [deleteFlash, setDeleteFlash] = useState(false);
@@ -214,33 +211,7 @@ export default function SettingsPage() {
           </div>
         </SettingsSection>
 
-        {/* 2. 通知设置 */}
-        <SettingsSection
-          icon={Bell}
-          title="Notifications"
-          description="Configure how the Advisory Engine communicates with you."
-          theme={currentTheme}
-          isDark={isDark}
-        >
-          <ToggleRow
-            label="Bankruptcy Risk Alerts"
-            description="Alert when 12-month bankruptcy probability exceeds 40%."
-            enabled={notifyBankruptcy}
-            onChange={setNotifyBankruptcy}
-            theme={currentTheme}
-            isDark={isDark}
-          />
-          <ToggleRow
-            label="Weekly Ledger Summary"
-            description="Automated digest of your bookkeeping patterns."
-            enabled={notifyWeekly}
-            onChange={setNotifyWeekly}
-            theme={currentTheme}
-            isDark={isDark}
-          />
-        </SettingsSection>
-
-        {/* 3. 账户管理 */}
+        {/* 2. 账户管理 */}
         <SettingsSection
           icon={User}
           title="Account"
@@ -298,7 +269,7 @@ export default function SettingsPage() {
           </button>
         </SettingsSection>
 
-        {/* 4. 隐私与 GDPR */}
+        {/* 3. 隐私与 GDPR */}
         <SettingsSection
           icon={ShieldCheck}
           title="Privacy & GDPR Compliance"
@@ -356,7 +327,7 @@ export default function SettingsPage() {
           </p>
         </SettingsSection>
 
-        {/* 5. 关于项目 */}
+        {/* 4. 关于项目 */}
         <div className={`border rounded-2xl p-6 text-xs space-y-1.5 transition-colors duration-300 ${isDark ? "bg-gray-900 border-gray-800 text-gray-600" : "bg-white border-gray-200 text-gray-500"}`}>
           <p className={`font-bold mb-3 text-sm ${isDark ? "text-gray-400" : "text-gray-700"}`}>About UniBudget Lab</p>
           <p><span className={isDark ? "text-gray-500" : "text-gray-400"}>Version:</span> 2.1.0</p>
