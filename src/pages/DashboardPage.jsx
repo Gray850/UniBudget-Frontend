@@ -29,15 +29,6 @@ function Tooltip({ children, text }) {
 }
 
 // ===========================================================================
-// 🌟 带有数字输入框且具备“进度颜色”效果的滑块组件
-// ===========================================================================
-// ===========================================================================
-// 🌟 带有数字输入框且具备“进度颜色”效果的滑块组件
-// ===========================================================================
-// ===========================================================================
-// 🌟 纯白高对比度版滑块组件（带手动输入框）
-// ===========================================================================
-// ===========================================================================
 // 🌟 纯白高对比度版滑块组件（带手动输入框）
 // ===========================================================================
 function ScenarioSlider({ label, tooltip, value, unit, onChange, min = 0, max = 10000, step = 100, color = "indigo" }) {
@@ -104,15 +95,27 @@ function ScenarioSlider({ label, tooltip, value, unit, onChange, min = 0, max = 
 }
 
 // ---------------------------------------------------------------------------
-// 本地核心算法
+// 本地核心算法：全新优化的加权健康分数 (Health Score)
 // ---------------------------------------------------------------------------
 function calculateHealthScore(income, totalExpense, currentBalance, bankruptcyProbability) {
-  if (bankruptcyProbability <= 1 && totalExpense <= income && currentBalance >= totalExpense) return 100;
-  const monthlyBuffer = income + (currentBalance / 6)
-  const riskRatio = monthlyBuffer > 0 ? (totalExpense / monthlyBuffer) * 35 : 100
-  return Math.max(0, Math.min(100, Math.round(100 - riskRatio - (bankruptcyProbability * 0.5))))
-}
+  // 1. Savings Ratio (权重 40分): 赚的越多，花得比例越低，分数越高
+  const savings = income - totalExpense;
+  const savingsScore = income > 0 ? Math.max(0, (savings / income) * 40) : 0;
 
+  // 2. Liquidity Buffer (权重 30分): 存款够撑 6个月就是满分
+  const monthsCovered = totalExpense > 0 ? currentBalance / totalExpense : 10;
+  const liquidityScore = Math.min(30, (monthsCovered / 6) * 30);
+
+  // 3. Safety Margin (权重 30分): 破产概率直接按比例扣分
+  const safetyScore = Math.max(0, 30 - (bankruptcyProbability * 0.3));
+
+  let finalScore = Math.round(savingsScore + liquidityScore + safetyScore);
+  
+  // 强制惩罚：如果破产风险超过 80%，分数不应该超过 20 分
+  if (bankruptcyProbability > 80) finalScore = Math.min(finalScore, 20);
+  
+  return Math.max(0, Math.min(100, finalScore));
+}
 
 // ---------------------------------------------------------------------------
 // 本地核心算法：加入了 Current Balance 缓冲机制 + 科学的蒙特卡洛波动
@@ -290,7 +293,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* 🌟 KPI 数据栏：加上了英文注释 */}
+      {/* 🌟 KPI 数据栏：包含了全新的加权分数说明！ */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           {
@@ -316,7 +319,8 @@ export default function DashboardPage() {
           },
           {
             label: "Health Score",
-            tooltip: "Scored out of 100. Points are deducted if expenses exceed your buffer, with heavy penalties for high bankruptcy risk.",
+            // 🌟 最重要的修改在这里：
+            tooltip: "A weighted index (0-100) based on your Savings Rate (40%), Liquidity Buffer (30%), and Monte Carlo Solvency Risk (30%).",
             value: simData ? `${simData.health_score}/100` : "--",
             color: !simData                   ? "text-gray-500"
                  : simData.health_score >= 70 ? (isDark ? "text-emerald-400" : "text-emerald-600")
@@ -353,7 +357,6 @@ export default function DashboardPage() {
               Drag sliders or enter values to forecast.
             </p>
 
-            {/* 🌟 滑块：加上了英文注释属性 tooltip="..." */}
             <ScenarioSlider label="Current Balance" tooltip="Your current liquid savings or cash on hand." unit={displayCurrency} min={0} max={50000} step={500} value={config.current_balance} onChange={(v) => setConfig((p) => ({ ...p, current_balance: v }))} color="teal" />
             <ScenarioSlider label="Monthly Income" tooltip="Your reliable monthly income after tax." unit={displayCurrency} min={0} max={15000} step={100} value={config.monthly_income} onChange={(v) => setConfig((p) => ({ ...p, monthly_income: v }))} color="emerald" />
             <ScenarioSlider label="Rent & Bills" tooltip="Fixed living costs like rent, utilities, and subscriptions." unit={displayCurrency} min={0} max={5000} step={50} value={config.monthly_rent} onChange={(v) => setConfig((p) => ({ ...p, monthly_rent: v }))} color="rose" />
