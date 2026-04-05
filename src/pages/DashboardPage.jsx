@@ -387,14 +387,8 @@ export default function DashboardPage() {
 
         <div className="xl:col-span-8 space-y-6">
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* 👇 直接在 Dashboard 里用 Tooltip 把整个表盘包起来！ */}
-            <Tooltip text="Scored out of 100: 50% based on your cash flow and financial runway, and 50% based on the Monte Carlo simulated bankruptcy risk.">
-              <div className="h-full w-full cursor-help transition-transform hover:scale-[1.02] duration-300">
-                <HealthScoreGauge score={simData?.health_score ?? calculateHealthScore(config.monthly_income, totalExpense, config.current_balance, 50)} />
-              </div>
-            </Tooltip>
-            
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <HealthScoreGauge score={simData?.health_score ?? calculateHealthScore(config.monthly_income, totalExpense, config.current_balance, 50)} />
             <ExpensePieChart data={{ rent: config.monthly_rent, food: config.essential_spending, transport: config.discretionary_spending }} />
           </div>
 
@@ -420,13 +414,14 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3 mb-4">
               <BrainCircuit className={`w-5 h-5 ${currentTheme?.text || 'text-indigo-500'}`} />
             <Tooltip text="Scored out of 100: 50% based on your cash flow and financial runway, and 50% based on the Monte Carlo simulated bankruptcy risk.">
-  <div className="flex items-center gap-1.5 cursor-help">
-    <h3 className="text-base font-bold text-gray-900 dark:text-white">
-      Analysis Methodology
-    </h3>
-    <Info className="w-4 h-4 text-gray-400 hover:text-indigo-500 transition-colors" />
-  </div>
-</Tooltip>
+          <div className="flex items-center gap-1.5 cursor-help">
+            <h3 className="text-base font-bold text-gray-900 dark:text-white">
+              Analysis Methodology
+            </h3>
+            <Info className="w-4 h-4 text-gray-400 hover:text-indigo-500 transition-colors" />
+          {/* 👇 就是这里！你刚才漏掉了这个闭合标签 */}
+          </div> 
+        </Tooltip>
             </div>
             <div className={`flex items-start gap-3 p-4 rounded-xl border text-sm leading-relaxed transition-colors duration-300 ${advisoryStyles[advisory.type]}`}>
               {advisoryIcons[advisory.type]}
