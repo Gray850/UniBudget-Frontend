@@ -23,19 +23,25 @@ import { ThemeContext } from "../ThemeContext"
 // ---------------------------------------------------------------------------
 // 🌟 内置的滑块组件（带手动输入框）
 // ---------------------------------------------------------------------------
+// 🌟 带有数字输入框且具备“进度颜色”效果的滑块组件
 function ScenarioSlider({ label, value, unit, onChange, min = 0, max = 10000, step = 100, color = "indigo" }) {
+  // 颜色映射表：用于输入框文字颜色和进度条填充色
   const colorMap = {
-    teal: "text-teal-500",
-    emerald: "text-emerald-500",
-    rose: "text-rose-500",
-    amber: "text-amber-500",
-    purple: "text-purple-500",
-    indigo: "text-indigo-500"
+    teal: { text: "text-teal-500", hex: "#14b8a6" },
+    emerald: { text: "text-emerald-500", hex: "#10b981" },
+    rose: { text: "text-rose-500", hex: "#f43f5e" },
+    amber: { text: "text-amber-500", hex: "#f59e0b" },
+    purple: { text: "text-purple-500", hex: "#a855f7" },
+    indigo: { text: "text-indigo-500", hex: "#6366f1" }
   };
+
+  const currentColor = colorMap[color] || colorMap.indigo;
+
+  // 核心逻辑：计算当前进度百分比，用于渲染左侧填充色
+  const percentage = ((value - min) / (max - min)) * 100;
 
   const handleInputChange = (e) => {
     let newValue = Number(e.target.value);
-    // 🛡️ 保护机制：防止输入负数或超大数字
     if (newValue < min) newValue = min;
     if (newValue > max) newValue = max;
     onChange(newValue);
@@ -46,19 +52,19 @@ function ScenarioSlider({ label, value, unit, onChange, min = 0, max = 10000, st
       <div className="flex items-center justify-between mb-2">
         <label className="text-sm font-semibold dark:text-gray-300 text-gray-700">{label}</label>
         
-        {/* 手动输入框区域 */}
+        {/* 数字输入框 */}
         <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800/50 px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 focus-within:ring-2 focus-within:ring-gray-400 transition-all">
           <span className="text-sm font-bold text-gray-400">{unit}</span>
           <input
             type="number"
             value={value}
             onChange={handleInputChange}
-            className={`w-20 bg-transparent text-right text-sm font-bold focus:outline-none ${colorMap[color] || colorMap.indigo}`}
+            className={`w-20 bg-transparent text-right text-sm font-bold focus:outline-none ${currentColor.text}`}
           />
         </div>
       </div>
 
-      {/* 滑动条 */}
+      {/* 🌟 进度条：通过 linear-gradient 实现左侧填色效果 */}
       <input
         type="range"
         min={min}
@@ -66,10 +72,12 @@ function ScenarioSlider({ label, value, unit, onChange, min = 0, max = 10000, st
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer bg-gray-200 dark:bg-gray-800 accent-${color}-500`}
+        style={{
+          background: `linear-gradient(to right, ${currentColor.hex} 0%, ${currentColor.hex} ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`
+        }}
+        className="w-full h-2 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
       />
       
-      {/* 最小值和最大值提示 */}
       <div className="flex justify-between text-[10px] text-gray-400 mt-1.5 font-medium">
         <span>{unit}{min}</span>
         <span>{unit}{max.toLocaleString()}</span>
