@@ -20,7 +20,7 @@ import { ThemeContext, THEMES } from "../ThemeContext";
 
 // ---------------------------------------------------------------------------
 // 子组件 (已升级：全面支持白天/黑夜模式和全局主题色)
-// ---------------------------------------------------------------------------
+
 function SettingsSection({ icon: Icon, title, description, children, theme, isDark }) {
   return (
     <div className={`border rounded-2xl p-6 shadow-xl transition-colors duration-300 ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}>
