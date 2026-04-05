@@ -21,15 +21,71 @@ import { ThemeContext } from "../ThemeContext"
 // ============================================================================
 // ⬇️ 临时预览区块开始 ⬇️
 // ⬆️ 临时预览区块结束 ⬆️
+// ---------------------------------------------------------------------------
+// 🌟 内置的滑块组件（带手动输入框）
+// ---------------------------------------------------------------------------
+function ScenarioSlider({ label, value, unit, onChange, min = 0, max = 10000, step = 100, color = "indigo" }) {
+  const colorMap = {
+    teal: "text-teal-500",
+    emerald: "text-emerald-500",
+    rose: "text-rose-500",
+    amber: "text-amber-500",
+    purple: "text-purple-500",
+    indigo: "text-indigo-500"
+  };
 
+  const handleInputChange = (e) => {
+    let newValue = Number(e.target.value);
+    // 🛡️ 保护机制：防止输入负数或超大数字
+    if (newValue < min) newValue = min;
+    if (newValue > max) newValue = max;
+    onChange(newValue);
+  };
+
+  return (
+    <div className="mb-6">
+      <div className="flex items-center justify-between mb-2">
+        <label className="text-sm font-semibold dark:text-gray-300 text-gray-700">{label}</label>
+        
+        {/* 手动输入框区域 */}
+        <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800/50 px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-700 focus-within:ring-2 focus-within:ring-gray-400 transition-all">
+          <span className="text-sm font-bold text-gray-400">{unit}</span>
+          <input
+            type="number"
+            value={value}
+            onChange={handleInputChange}
+            className={`w-20 bg-transparent text-right text-sm font-bold focus:outline-none ${colorMap[color] || colorMap.indigo}`}
+          />
+        </div>
+      </div>
+
+      {/* 滑动条 */}
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer bg-gray-200 dark:bg-gray-800 accent-${color}-500`}
+      />
+      
+      {/* 最小值和最大值提示 */}
+      <div className="flex justify-between text-[10px] text-gray-400 mt-1.5 font-medium">
+        <span>{unit}{min}</span>
+        <span>{unit}{max.toLocaleString()}</span>
+      </div>
+    </div>
+  );
+}
 // ---------------------------------------------------------------------------
 // 本地核心算法：加入了 Current Balance 缓冲机制
 // ---------------------------------------------------------------------------
 function calculateHealthScore(income, totalExpense, currentBalance, bankruptcyProbability) {
   // 引入存款作为缓冲：把本金分摊到12个月里增强抗风险能力
-  const monthlyBuffer = income + (currentBalance / 12)
+  const monthlyBuffer = income + (currentBalance / 6)
   const riskRatio = monthlyBuffer > 0 ? (totalExpense / monthlyBuffer) * 35 : 100
-  return Math.max(0, Math.min(100, Math.round(100 - riskRatio - (bankruptcyProbability * 0.2))))
+  return Math.max(0, Math.min(100, Math.round(100 - riskRatio - (bankruptcyProbability * 0.5))))
 }
 
 function mockSimulate(config) {
@@ -129,11 +185,11 @@ export default function DashboardPage() {
   const displayCurrency = currencySymbol || "£"
 
   const [config, setConfig] = useState({
-    current_balance:        4000,
-    monthly_income:         1500,
-    monthly_rent:           1150,
-    essential_spending:     540,
-    discretionary_spending: 450,
+    current_balance:        0,
+    monthly_income:         0,
+    monthly_rent:           0,
+    essential_spending:     0,
+    discretionary_spending: 0,
   })
 
   const [simData, setSimData]     = useState(null)
@@ -276,11 +332,11 @@ export default function DashboardPage() {
               Drag sliders to forecast your future solvency.
             </p>
 
-            <ScenarioSlider label="Current Balance" unit={displayCurrency} min={0} max={10000} step={100} value={config.current_balance} onChange={(v) => setConfig((p) => ({ ...p, current_balance: v }))} color="teal" />
-            <ScenarioSlider label="Monthly Income" unit={displayCurrency} min={0} max={5000} step={50} value={config.monthly_income} onChange={(v) => setConfig((p) => ({ ...p, monthly_income: v }))} color="emerald" />
-            <ScenarioSlider label="Rent & Bills" unit={displayCurrency} min={0} max={3000} step={25} value={config.monthly_rent} onChange={(v) => setConfig((p) => ({ ...p, monthly_rent: v }))} color="rose" />
-            <ScenarioSlider label="Essential Spending" unit={displayCurrency} min={0} max={2000} step={25} value={config.essential_spending} onChange={(v) => setConfig((p) => ({ ...p, essential_spending: v }))} color="amber" />
-            <ScenarioSlider label="Discretionary Spending" unit={displayCurrency} min={0} max={2000} step={25} value={config.discretionary_spending} onChange={(v) => setConfig((p) => ({ ...p, discretionary_spending: v }))} color="purple" />
+            <ScenarioSlider label="Current Balance" unit={displayCurrency} min={0} max={50000} step={100} value={config.current_balance} onChange={(v) => setConfig((p) => ({ ...p, current_balance: v }))} color="teal" />
+            <ScenarioSlider label="Monthly Income" unit={displayCurrency} min={0} max={10000} step={50} value={config.monthly_income} onChange={(v) => setConfig((p) => ({ ...p, monthly_income: v }))} color="emerald" />
+            <ScenarioSlider label="Rent & Bills" unit={displayCurrency} min={0} max={5000} step={25} value={config.monthly_rent} onChange={(v) => setConfig((p) => ({ ...p, monthly_rent: v }))} color="rose" />
+            <ScenarioSlider label="Essential Spending" unit={displayCurrency} min={0} max={5000} step={25} value={config.essential_spending} onChange={(v) => setConfig((p) => ({ ...p, essential_spending: v }))} color="amber" />
+            <ScenarioSlider label="Discretionary Spending" unit={displayCurrency} min={0} max={5000} step={25} value={config.discretionary_spending} onChange={(v) => setConfig((p) => ({ ...p, discretionary_spending: v }))} color="purple" />
           </div>
 
           <ScenarioManager currentValues={config} onLoad={setConfig} />
