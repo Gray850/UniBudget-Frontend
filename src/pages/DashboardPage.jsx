@@ -388,7 +388,13 @@ export default function DashboardPage() {
         <div className="xl:col-span-8 space-y-6">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <HealthScoreGauge score={simData?.health_score ?? calculateHealthScore(config.monthly_income, totalExpense, config.current_balance, 50)} />
+            {/* 👇 直接在 Dashboard 里用 Tooltip 把整个表盘包起来！ */}
+            <Tooltip text="Scored out of 100: 50% based on your cash flow and financial runway, and 50% based on the Monte Carlo simulated bankruptcy risk.">
+              <div className="h-full w-full cursor-help transition-transform hover:scale-[1.02] duration-300">
+                <HealthScoreGauge score={simData?.health_score ?? calculateHealthScore(config.monthly_income, totalExpense, config.current_balance, 50)} />
+              </div>
+            </Tooltip>
+            
             <ExpensePieChart data={{ rent: config.monthly_rent, food: config.essential_spending, transport: config.discretionary_spending }} />
           </div>
 
