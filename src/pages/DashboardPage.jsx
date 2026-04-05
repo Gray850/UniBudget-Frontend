@@ -70,14 +70,14 @@ function ScenarioSlider({ label, tooltip, value, unit, onChange, min = 0, max = 
           </label>
         </Tooltip>
 
-        {/* 🎨 重点修改：bg-white + border-gray-300 + shadow-sm */}
-        <div className="flex items-center gap-1 bg-white dark:bg-gray-800 px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+        {/* 纯白输入框区域 */}
+        <div className="flex items-center gap-1 bg-white px-2 py-1.5 rounded-lg border border-gray-300 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
           <span className="text-sm font-bold text-gray-400">{unit}</span>
           <input
             type="number"
             value={value}
             onChange={handleInputChange}
-            className={`w-20 bg-transparent text-right text-sm font-bold focus:outline-none ${currentColor.text}`}
+            className={`w-20 bg-transparent text-right text-sm font-bold focus:outline-none text-gray-900 ${currentColor.text}`}
           />
         </div>
       </div>
