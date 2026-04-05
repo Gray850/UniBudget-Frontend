@@ -107,38 +107,44 @@ function ScenarioSlider({ label, tooltip, value, unit, onChange, min = 0, max = 
 // ---------------------------------------------------------------------------
 // 本地核心算法：对数加速降级算法 (Logarithmic Runway Decay)
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// 本地核心算法：幂函数断崖降级算法 (Power-Curve Cliff Decay)
+// ---------------------------------------------------------------------------
 function calculateHealthScore(income, totalExpense, currentBalance, bankruptcyProbability) {
   const netFlow = income - totalExpense;
-  
-  // 1. Runway Score (权重 50分)
-  let runwayScore = 50;
-  
+  let score = 100;
+
+  // 1. Runway 影响 (采用 0.4 次幂，实现极速坠落)
+  // 当 runway 接近 0 时，Math.pow(runway, 0.4) 的变化率极其惊人
+  let runwayFactor = 1; 
   if (netFlow < 0) {
     const runway = Math.max(0, currentBalance / Math.abs(netFlow));
-    
-    // 💡 引入对数逻辑：ln(runway + 1) / ln(12 + 1)
-    // 这样当 runway 从 12 降到 0 时，分数下降的速度会越来越快
-    // 这种曲线比线性下降更符合“存款越少越焦虑”的心理
-    const normalizedRunway = Math.min(runway, 12);
-    runwayScore = (Math.log1p(normalizedRunway) / Math.log1p(12)) * 50;
+    const normalizedRunway = Math.min(runway, 12) / 12; // 缩放到 0-1 之间
+    runwayFactor = Math.pow(normalizedRunway, 0.4); 
   }
 
-  // 2. Risk Penalty (权重 50分)
-  // 保持线性惩罚，或者也可以微调
-  const riskScore = 50 - (bankruptcyProbability / 100) * 50;
+  // 2. 风险影响 (采用指数衰减)
+  // e^(-risk/常数)，让风险超过 50% 后的扣分感呈倍数增加
+  const riskFactor = Math.exp(-bankruptcyProbability / 50);
 
-  let totalScore = runwayScore + riskScore;
+  // 初步合成基础分
+  score = 100 * runwayFactor * riskFactor;
 
-  // 3. 负债加速惩罚 (Sub-Zero Penalty)
-  // 当余额小于 0 时，我们使用平方根函数加速惩罚，让分数迅速跌向个位数
+  // 3. 负债“死亡螺旋”逻辑 (Sub-Zero Death Spiral)
   if (currentBalance < 0) {
-    const debtRatio = Math.abs(currentBalance / (income || 1000));
-    // 只要余额为负，立刻额外扣除至少 20 分，并随负债程度加速扣分
-    totalScore -= (Math.sqrt(debtRatio) * 15 + 20);
+    // 只要欠钱，基础分先强制“打骨折” (砍掉 40%)
+    score *= 0.6;
+    
+    // 然后根据欠钱的绝对值，进行二次幂惩罚
+    // 每欠 1000 镑，惩罚力度就会非线性增加
+    const debtBurden = Math.abs(currentBalance) / 1000;
+    score -= Math.pow(debtBurden, 1.2) * 10;
   }
 
-  // 最终处理
-  return Math.max(0, Math.min(100, Math.round(totalScore)));
+  // 4. 兜底逻辑：如果完全没收入也没存款，那就是 0
+  if (income <= 0 && currentBalance <= 0) score = Math.min(score, 10);
+
+  return Math.max(0, Math.min(100, Math.round(score)));
 }
 function mockSimulate(config) {
   const { monthly_income, monthly_rent, essential_spending, discretionary_spending, current_balance } = config
