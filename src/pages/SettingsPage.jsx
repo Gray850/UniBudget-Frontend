@@ -9,19 +9,13 @@ import {
 // 为了实现您要求的“全站联动变色与货币同步”，并在当前预览环境中不报错，请执行以下步骤：
 //
 // 1. 在您的本地代码中，请取消下面这行的注释（去掉行首的 // ），引入您真正的全局配置：
-// import { ThemeContext, THEMES } from "../ThemeContext";
+import { ThemeContext, THEMES } from "../ThemeContext";
 //
 // 2. 然后，请删除下面的两个“临时预览区块”。
 // 3. 将 `export function SettingsPage` 改回 `export default function SettingsPage`
 // ============================================================================
 
 // ⬇️ 临时预览区块一：模拟主题数据 (在本地 VS Code 中请将这段完全删除) ⬇️
-const THEMES = {
-  indigo: { bg: "bg-indigo-600", text: "text-indigo-500", border: "border-indigo-500", ring: "ring-indigo-500" },
-  emerald: { bg: "bg-emerald-600", text: "text-emerald-500", border: "border-emerald-500", ring: "ring-emerald-500" },
-  rose: { bg: "bg-rose-600", text: "text-rose-500", border: "border-rose-500", ring: "ring-rose-500" },
-};
-const ThemeContext = createContext();
 // ⬆️ 临时预览区块一结束 ⬆️
 
 // ---------------------------------------------------------------------------
@@ -94,7 +88,7 @@ function DangerButton({ icon: Icon, label, description, buttonLabel, onClick, is
 // ---------------------------------------------------------------------------
 // 主设置页面组件 (⚠️ 本地使用时，请将这里改为 export default function SettingsPage)
 // ---------------------------------------------------------------------------
-export function SettingsPage() {
+export default function SettingsPage() {
   // 🌟 魔法在这里：从全局接管 isDark, theme, currency 等状态
   const { 
     isDark, setIsDark, 
@@ -384,20 +378,4 @@ export function SettingsPage() {
 }
 
 // ⬇️ 临时预览区块二：让预览环境有数据环境 (在本地 VS Code 中请将这段完全删除) ⬇️
-export default function App() {
-  const [isDark, setIsDark] = useState(true);
-  const [themeKey, setThemeKey] = useState("indigo");
-  const [currency, setCurrency] = useState("GBP");
-
-  return (
-    <ThemeContext.Provider value={{ 
-      isDark, setIsDark, 
-      themeKey, setThemeKey, 
-      theme: THEMES[themeKey], 
-      currency, setCurrency 
-    }}>
-      <SettingsPage />
-    </ThemeContext.Provider>
-  );
-}
 // ⬆️ 临时预览区块二结束 ⬆️
