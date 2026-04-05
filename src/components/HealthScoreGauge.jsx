@@ -1,73 +1,88 @@
-import React, { useContext } from "react";
-import { Doughnut } from "react-chartjs-2";
-/**
- * Import ThemeContext from the root src directory.
- * Adjusted path to ensure resolution in standard React project structures.
- */
-import { ThemeContext } from "../ThemeContext";
+import React from 'react';
+import { Info } from 'lucide-react';
 
-/**
- * HealthScoreGauge Component
- * Displays a doughnut chart showing the financial health score 
- * and dynamic status ratings for specific financial dimensions.
- * All labels and statuses are provided in English as requested.
- */
-export default function HealthScoreGauge({ score }) {
-  const { isDark } = useContext(ThemeContext);
-  
-  // Logic to return rating labels and colors based on score
-  const getRating = (s) => {
-    if (s >= 85) return { label: "Excellent", color: "#10b981" };
-    if (s >= 65) return { label: "Good", color: "#6366f1" };
-    if (s >= 45) return { label: "Fair", color: "#f59e0b" };
-    return { label: "At Risk", color: "#ef4444" };
-  };
-
-  const { label, color } = getRating(score);
-  
-  // Dynamic status for different financial metrics based on overall score
-  const liquidityStatus = score > 80 ? "Excellent" : score > 50 ? "Good" : "Fair";
-  const spendingStatus = score > 60 ? "Good" : score > 30 ? "Fair" : "Alert";
-  const safetyStatus = score > 75 ? "Excellent" : score > 40 ? "Good" : "At Risk";
-
-  const data = {
-    datasets: [{
-      data: [score, 100 - score],
-      backgroundColor: [color, isDark ? "#1f2937" : "#e5e7eb"],
-      borderWidth: 0,
-      circumference: 270,
-      rotation: 225,
-    }],
-  };
-
+// 🌟 专供大表盘使用的迷你 Tooltip 组件
+function Tooltip({ children, text }) {
+  if (!text) return children; 
   return (
-    <div className={`${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100"} border rounded-[2rem] p-6 shadow-xl flex flex-col justify-between transition-all duration-300`}>
-      <h3 className={`font-bold text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-        Financial Health Score
-      </h3>
-      
-      <div className="relative h-48 flex items-center justify-center mt-2">
-        <Doughnut data={data} options={{ responsive: true, maintainAspectRatio: false, cutout: "82%", plugins: { tooltip: { enabled: false } } }} />
-        <div className="absolute inset-0 flex flex-col items-center justify-center pt-8">
-          <span className={`text-5xl font-black ${isDark ? "text-white" : "text-gray-900"}`}>{score}</span>
-          <span className="text-[10px] uppercase tracking-[0.3em] font-bold mt-2" style={{ color }}>{label}</span>
-        </div>
-      </div>
-
-      {/* Footer Status Indicators with English labels */}
-      <div className="mt-8 flex justify-center gap-4 px-2">
-        {[
-          { category: "Liquidity", status: liquidityStatus, color: "bg-emerald-500" },
-          { category: "Spending", status: spendingStatus, color: "bg-indigo-500" },
-          { category: "Safety", status: safetyStatus, color: "bg-amber-500" },
-        ].map((item) => (
-          <div key={item.category} className="flex flex-col items-center gap-1.5 min-w-[70px]">
-            <div className={`w-2 h-2 rounded-full ${item.color}`} />
-            <span className="text-[8px] text-gray-500 uppercase font-black tracking-tighter">{item.category}</span>
-            <span className={`text-[10px] font-bold ${isDark ? "text-gray-200" : "text-gray-900"}`}>{item.status}</span>
-          </div>
-        ))}
+    <div className="group relative flex items-center cursor-help w-fit">
+      {children}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-2.5 text-xs text-white bg-gray-800 dark:bg-gray-700 rounded-lg shadow-xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 text-center leading-relaxed font-normal">
+        {text}
+        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800 dark:border-t-gray-700"></div>
       </div>
     </div>
   );
 }
+
+const HealthScoreGauge = ({ score = 0 }) => {
+  const getStatus = (val) => {
+    if (val >= 70) return { color: '#10b981', text: 'EXCELLENT', label: 'Good' };
+    if (val >= 40) return { color: '#f59e0b', text: 'STABLE', label: 'Fair' };
+    return { color: '#f43f5e', text: 'AT RISK', label: 'Critical' };
+  };
+
+  const status = getStatus(score);
+  const strokeDasharray = 283; 
+  const percentage = (score / 100) * 0.75; 
+
+  return (
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-xl flex flex-col items-center">
+      
+      {/* 🌟 核心在这里！精准定位的小 i 图标和注释 */}
+      <div className="w-full mb-4 flex justify-center">
+        <Tooltip text="Scored out of 100: 50% based on your cash flow and financial runway, and 50% based on the Monte Carlo simulated bankruptcy risk.">
+          <h3 className="text-sm font-bold flex items-center gap-1.5 text-gray-900 dark:text-white cursor-help">
+            Financial Health Score
+            <Info className="w-4 h-4 text-gray-400 hover:text-emerald-500 transition-colors" />
+          </h3>
+        </Tooltip>
+      </div>
+
+      <div className="relative flex items-center justify-center w-48 h-48">
+        <svg className="w-full h-full transform -rotate-[225deg]" viewBox="0 0 100 100">
+          <circle
+            cx="50" cy="50" r="45"
+            fill="none"
+            stroke="#e5e7eb"
+            strokeWidth="8"
+            strokeDasharray="212 283"
+            strokeLinecap="round"
+            className="dark:stroke-gray-800"
+          />
+          <circle
+            cx="50" cy="50" r="45"
+            fill="none"
+            stroke={status.color}
+            strokeWidth="8"
+            strokeDasharray="283"
+            strokeDashoffset={283 - (212 * (score / 100))}
+            strokeLinecap="round"
+            style={{ transition: 'stroke-dashoffset 0.8s ease-out, stroke 0.5s ease' }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center pt-4">
+          <span className="text-5xl font-black text-gray-900 dark:text-white">{score}</span>
+          <span className="text-xs font-bold mt-1 tracking-[0.2em]" style={{ color: status.color }}>{status.text}</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-8 mt-6 w-full pt-6 border-t border-gray-100 dark:border-gray-800">
+        <div className="text-center">
+          <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Liquidity</p>
+          <p className="text-xs font-bold text-gray-700 dark:text-gray-300">Excellent</p>
+        </div>
+        <div className="text-center">
+          <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Spending</p>
+          <p className="text-xs font-bold text-gray-700 dark:text-gray-300">Good</p>
+        </div>
+        <div className="text-center">
+          <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Safety</p>
+          <p className="text-xs font-bold text-gray-700 dark:text-gray-300">Excellent</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default HealthScoreGauge;
