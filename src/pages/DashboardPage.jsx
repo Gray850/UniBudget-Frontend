@@ -338,8 +338,7 @@ export default function DashboardPage() {
           },
           {
             label: "Health Score",
-            // 🌟 最重要的修改在这里：
-            tooltip: "A weighted index (0-100) based on your Savings Rate (40%), Liquidity Buffer (30%), and Monte Carlo Solvency Risk (30%).",
+            tooltip: "Scored out of 100: 50% based on your cash flow and financial runway, and 50% based on the Monte Carlo simulated bankruptcy risk.",
             value: simData ? `${simData.health_score}/100` : "--",
             color: !simData                   ? "text-gray-500"
                  : simData.health_score >= 70 ? (isDark ? "text-emerald-400" : "text-emerald-600")
