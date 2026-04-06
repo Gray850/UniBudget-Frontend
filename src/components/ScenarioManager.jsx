@@ -30,7 +30,7 @@ export default function ScenarioManager({ currentValues, onLoad }) {
       </h3>
 
       <div className="flex gap-3 mb-3">
-        <input type="text" placeholder="Name this scenario" value={name} onChange={(e) => setName(e.target.value)} className={`flex-1 ${isDark ? "bg-gray-950 border-gray-800 text-white placeholder-gray-600" : "bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400"} border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-${theme.main}-500 transition-colors shadow-inner`} />
+        <input type="text" placeholder='"Name this scenario, e.g. "Worst Case" 'value={name} onChange={(e) => setName(e.target.value)} className={`flex-1 ${isDark ? "bg-gray-950 border-gray-800 text-white placeholder-gray-600" : "bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400"} border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-${theme.main}-500 transition-colors shadow-inner`} />
         <button onClick={handleSave} className={`${theme.bg} hover:opacity-90 text-white rounded-xl px-4 py-2.5 text-sm font-bold transition-colors shadow-lg flex items-center gap-2`}>
           <Save className="w-4 h-4" /> Save
         </button>

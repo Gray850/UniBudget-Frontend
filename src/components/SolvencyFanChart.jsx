@@ -34,7 +34,7 @@ export default function SolvencyFanChart({ days, p5, p50, p95 }) {
       <div className="flex items-center justify-between mb-4">
         <h3 className={`font-bold text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}>12-Month Solvency Forecast</h3>
       </div>
-      <p className="text-xs text-gray-500 mb-6 italic">* Shaded band represents the 90% confidence interval across simulated scenarios.</p>
+      <p className="text-xs text-gray-500 mb-6 italic">* Shaded band represents the 90% confidence interval across 10,000 simulated scenarios.</p>
       <div className="h-64 relative">
         <Line data={data} options={options} />
       </div>
