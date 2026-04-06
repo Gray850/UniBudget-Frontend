@@ -32,65 +32,57 @@ function Tooltip({ children, text }) {
 // ===========================================================================
 // 🌟 纯白高对比度版滑块组件（带手动输入框）
 // ===========================================================================
+// ===========================================================================
+// 🌟 完美适配黑夜模式的滑块组件 (ScenarioSlider)
+// ===========================================================================
 function ScenarioSlider({ label, tooltip, value, unit, onChange, min = 0, max = 10000, step = 100, color = "indigo" }) {
-  const colorMap = {
-    teal: { text: "text-teal-600 dark:text-teal-400", hex: "#14b8a6" },
-    emerald: { text: "text-emerald-600 dark:text-emerald-400", hex: "#10b981" },
-    rose: { text: "text-rose-600 dark:text-rose-400", hex: "#f43f5e" },
-    amber: { text: "text-amber-600 dark:text-amber-400", hex: "#f59e0b" },
-    purple: { text: "text-purple-600 dark:text-purple-400", hex: "#a855f7" },
-    indigo: { text: "text-indigo-600 dark:text-indigo-400", hex: "#6366f1" }
-  };
+  // 🌟 连上全局主题大脑，自动感知黑夜模式！
+  const { isDark } = useContext(ThemeContext);
 
+  // 颜色表也做适配，黑夜模式下文字颜色稍微调亮一点，看着更舒服
+  const colorMap = {
+    teal: { text: isDark ? "text-teal-400" : "text-teal-600", hex: "#14b8a6" },
+    emerald: { text: isDark ? "text-emerald-400" : "text-emerald-600", hex: "#10b981" },
+    rose: { text: isDark ? "text-rose-400" : "text-rose-600", hex: "#f43f5e" },
+    amber: { text: isDark ? "text-amber-400" : "text-amber-600", hex: "#f59e0b" },
+    purple: { text: isDark ? "text-purple-400" : "text-purple-600", hex: "#a855f7" },
+    indigo: { text: isDark ? "text-indigo-400" : "text-indigo-600", hex: "#6366f1" }
+  };
   const currentColor = colorMap[color] || colorMap.indigo;
   const percentage = ((value - min) / (max - min)) * 100;
-
-  const handleInputChange = (e) => {
-    let newValue = Number(e.target.value);
-    if (newValue < min) newValue = min;
-    if (newValue > max) newValue = max;
-    onChange(newValue);
-  };
+  
+  // 🌟 核心：滑块未填充部分的白线，在黑夜模式下变成深灰色 (#374151)
+  const trackColor = isDark ? "#374151" : "#e5e7eb";
 
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-2">
         <Tooltip text={tooltip}>
-          <label className="text-sm font-semibold dark:text-gray-300 text-gray-700 flex items-center gap-1.5">
+          {/* 标题文字也做黑夜适配 */}
+          <label className={`text-sm font-semibold flex items-center gap-1.5 cursor-help ${isDark ? "text-gray-300" : "text-gray-700"}`}>
             {label}
             {tooltip && <Info className="w-3.5 h-3.5 text-gray-400 hover:text-indigo-500 transition-colors" />}
           </label>
         </Tooltip>
-
-        {/* 纯白输入框区域 */}
-        <div className="flex items-center gap-1 bg-white px-2 py-1.5 rounded-lg border border-gray-300 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+        
+        {/* 🌟 输入框背景适配：白天白底，黑夜深灰底 */}
+        <div className={`flex items-center gap-1 px-2 py-1.5 rounded-lg border shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/20 transition-colors duration-300 ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-300"}`}>
           <span className="text-sm font-bold text-gray-400">{unit}</span>
           <input
-            type="number"
-            value={value}
-            onChange={handleInputChange}
-            className={`w-20 bg-transparent text-right text-sm font-bold focus:outline-none text-gray-900 ${currentColor.text}`}
+            type="number" value={value}
+            onChange={(e) => onChange(Number(e.target.value))}
+            className={`w-20 bg-transparent text-right text-sm font-bold focus:outline-none ${currentColor.text}`}
           />
         </div>
       </div>
-
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        style={{
-          background: `linear-gradient(to right, ${currentColor.hex} 0%, ${currentColor.hex} ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`
-        }}
-        className="w-full h-2 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-      />
       
-      <div className="flex justify-between text-[10px] text-gray-400 mt-1.5 font-medium">
-        <span>{unit}{min}</span>
-        <span>{unit}{max.toLocaleString()}</span>
-      </div>
+      <input
+        type="range" min={min} max={max} step={step} value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        // 🌟 把上面算好的 trackColor 塞进渐变色里
+        style={{ background: `linear-gradient(to right, ${currentColor.hex} 0%, ${currentColor.hex} ${percentage}%, ${trackColor} ${percentage}%, ${trackColor} 100%)` }}
+        className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+      />
     </div>
   );
 }
